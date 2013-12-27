@@ -186,27 +186,34 @@ NS_ENUM(NSInteger, serverRequests) {
     NSError *error;
     NSData *data = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];
     
-    [self.outputStream write:[data bytes] maxLength:[data length]];
+    if (error) {
+        NSLog(@"Error creating JSON while completing handshake");
+    } else {
+        [self.outputStream write:[data bytes] maxLength:[data length]];
+    }
 }
 
 - (void)sendGameDataForSensors:(NSMutableArray *)sensors
 {
     NSDictionary *response;
-    NSMutableArray *deviceArray = [NSMutableArray new];
+    NSMutableDictionary *deviceDictionary = [NSMutableDictionary new];
     NSError *error;
 
     for (NSInteger i=0; i < [sensors count]; i++) {
-        NSLog(@"Received sensors: %@", sensors);
         NSNumber *sensorValue = (NSNumber *)[sensors objectAtIndex:i];
         SensorType sensor = [DENSensors getSensorForID:[sensorValue integerValue]];
         NSDictionary *sensorData = [self.sensorManager getSensorDataForSensor:sensor];
-        [deviceArray addObject:sensorData];
+        [deviceDictionary setObject:sensorData forKey:[NSString stringWithFormat:@"%li", sensor]];
     }
     
-    response = @{@"Devices": deviceArray};
+    response = @{@"Devices": deviceDictionary};
     
     NSData *data = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];
-    [self.outputStream write:[data bytes] maxLength:[data length]];
+    if (error) {
+        NSLog(@"Error creating JSON while sending data");
+    } else {
+        [self.outputStream write:[data bytes] maxLength:[data length]];
+    }
 }
 
 @end
