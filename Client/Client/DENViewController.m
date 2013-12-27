@@ -25,7 +25,7 @@
     
     self.client = [[DENClient alloc] init];
     
-    NSString *connectLabel = [self.client connected] ? @"Disconnect" : @"Connect";
+    NSString *connectLabel = [self.client isConnected] ? @"Disconnect" : @"Connect";
     [self.connectButton setTitle:connectLabel forState:UIControlStateNormal];
 }
 
@@ -37,7 +37,7 @@
 
 - (IBAction)connectToServer:(id)sender
 {
-    if ([self.client connected] == YES) {
+    if ([self.client isConnected] == YES) {
         [self.client disconnect];
         [self.connectButton setTitle:@"Connect" forState:UIControlStateNormal];
     } else {

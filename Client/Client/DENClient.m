@@ -7,6 +7,8 @@
 //
 
 #import "DENClient.h"
+#import "DENSensors.h"
+@import CoreMotion;
 
 NS_ENUM(NSInteger, serverRequests) {
     NULL_REQUEST,
@@ -16,11 +18,17 @@ NS_ENUM(NSInteger, serverRequests) {
 
 @interface DENClient () <NSStreamDelegate>
 
+// NSStreams
 @property (nonatomic, strong) NSInputStream *inputStream;
 @property (nonatomic, strong) NSOutputStream *outputStream;
+// Socket details
 @property (nonatomic, strong) NSString *host;
 @property (nonatomic, assign) UInt32 port;
+@property (nonatomic, strong) DENSensors *sensorManager;
+
+// States
 @property BOOL handShaked;
+@property BOOL connected;
 
 - (void)completeHandshake;
 
@@ -35,6 +43,7 @@ NS_ENUM(NSInteger, serverRequests) {
         self.host = @"192.168.0.7";
         self.port = 8080;
         self.handShaked = FALSE;
+        self.sensorManager = [DENSensors new];
     }
     
     return self;
@@ -78,6 +87,11 @@ NS_ENUM(NSInteger, serverRequests) {
     self.connected = NO;
 }
 
+- (BOOL)isConnected
+{
+    return self.connected;
+}
+
 #pragma mark - NSStream Delegate
 
 - (void)stream:(NSStream *)aStream handleEvent:(NSStreamEvent)eventCode
@@ -109,6 +123,9 @@ NS_ENUM(NSInteger, serverRequests) {
             break;
         }
             
+        case NSStreamEventHasSpaceAvailable:
+            break;
+            
         default:
             NSLog(@"Unhandled event");
     }
@@ -121,21 +138,18 @@ NS_ENUM(NSInteger, serverRequests) {
     uint8_t buffer[1024];
     NSInteger len;
     
+    NSMutableString *input = [[NSMutableString alloc] init];
+    
     while ([self.inputStream hasBytesAvailable]) {
         len = [self.inputStream read:buffer maxLength:sizeof(buffer)];
         if (len > 0) {
-            NSString *stringInput = [[NSString alloc] initWithBytes:buffer length:sizeof(buffer) encoding:NSASCIIStringEncoding];
-            if (stringInput != nil) {
+            [input appendString: [[NSString alloc] initWithBytes:buffer length:len encoding:NSUTF8StringEncoding]];
+            if (input != nil) {
                 NSError *error;
-                /* We need to convert from ASCII to UTF-8 (which is const char *) and then back to an NSString. This is because NSJSONSerialization
-                 only takes UTF */
-                stringInput = [stringInput stringByTrimmingCharactersInSet:[NSCharacterSet controlCharacterSet]];
-                NSString *utfString = [NSString stringWithUTF8String:[stringInput UTF8String]];
-                NSDictionary *JSONOutput = [NSJSONSerialization JSONObjectWithData:[utfString dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingAllowFragments error:&error];
+                NSDictionary *JSONOutput = [NSJSONSerialization JSONObjectWithData:[input dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingAllowFragments error:&error];
                 if (error) {
                     NSLog(@"Error parsing JSON %@", [error debugDescription]);
                 } else {
-                   // NSLog(@"Output: %@", JSONOutput);
                     NSNumber *requestType = [JSONOutput objectForKey:@"Request_type"];
                     switch ([requestType integerValue]) {
                         case NULL_REQUEST:
@@ -152,7 +166,10 @@ NS_ENUM(NSInteger, serverRequests) {
                         }
                             
                         case GAME_DATA:
+                        {
+                            [self sendGameDataForSensors:[JSONOutput objectForKey:@"Devices"]];
                             break;
+                        }
                             
                         default:
                             NSLog(@"Unrecognized request type");
@@ -168,10 +185,28 @@ NS_ENUM(NSInteger, serverRequests) {
     NSDictionary *response = @{@"Response": @1};
     NSError *error;
     NSData *data = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];
-    NSString *utfString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-    NSData *asciiData = [utfString dataUsingEncoding:NSASCIIStringEncoding];
     
-    [self.outputStream write:[asciiData bytes] maxLength:[asciiData length]];
+    [self.outputStream write:[data bytes] maxLength:[data length]];
+}
+
+- (void)sendGameDataForSensors:(NSMutableArray *)sensors
+{
+    NSDictionary *response;
+    NSMutableArray *deviceArray = [NSMutableArray new];
+    NSError *error;
+
+    for (NSInteger i=0; i < [sensors count]; i++) {
+        NSLog(@"Received sensors: %@", sensors);
+        NSNumber *sensorValue = (NSNumber *)[sensors objectAtIndex:i];
+        SensorType sensor = [DENSensors getSensorForID:[sensorValue integerValue]];
+        NSDictionary *sensorData = [self.sensorManager getSensorDataForSensor:sensor];
+        [deviceArray addObject:sensorData];
+    }
+    
+    response = @{@"Devices": deviceArray};
+    
+    NSData *data = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];
+    [self.outputStream write:[data bytes] maxLength:[data length]];
 }
 
 @end

@@ -22,6 +22,7 @@
 		A2721F33186CCC5300CE2513 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = A2721F31186CCC5300CE2513 /* InfoPlist.strings */; };
 		A2721F35186CCC5300CE2513 /* ClientTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A2721F34186CCC5300CE2513 /* ClientTests.m */; };
 		A2906E71186CD21A00B02D43 /* DENClient.m in Sources */ = {isa = PBXBuildFile; fileRef = A2906E70186CD21A00B02D43 /* DENClient.m */; };
+		A2AC3858186E0D78006751A9 /* DENSensors.m in Sources */ = {isa = PBXBuildFile; fileRef = A2AC3857186E0D78006751A9 /* DENSensors.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,6 +57,8 @@
 		A2721F34186CCC5300CE2513 /* ClientTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ClientTests.m; sourceTree = "<group>"; };
 		A2906E6F186CD21A00B02D43 /* DENClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DENClient.h; sourceTree = "<group>"; };
 		A2906E70186CD21A00B02D43 /* DENClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DENClient.m; sourceTree = "<group>"; };
+		A2AC3856186E0D78006751A9 /* DENSensors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DENSensors.h; sourceTree = "<group>"; };
+		A2AC3857186E0D78006751A9 /* DENSensors.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DENSensors.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -122,6 +125,8 @@
 				A2721F1F186CCC5300CE2513 /* DENViewController.m */,
 				A2906E6F186CD21A00B02D43 /* DENClient.h */,
 				A2906E70186CD21A00B02D43 /* DENClient.m */,
+				A2AC3856186E0D78006751A9 /* DENSensors.h */,
+				A2AC3857186E0D78006751A9 /* DENSensors.m */,
 				A2721F21186CCC5300CE2513 /* Images.xcassets */,
 				A2721F10186CCC5200CE2513 /* Supporting Files */,
 			);
@@ -258,6 +263,7 @@
 				A2906E71186CD21A00B02D43 /* DENClient.m in Sources */,
 				A2721F1A186CCC5300CE2513 /* DENAppDelegate.m in Sources */,
 				A2721F16186CCC5200CE2513 /* main.m in Sources */,
+				A2AC3858186E0D78006751A9 /* DENSensors.m in Sources */,
 				A2721F20186CCC5300CE2513 /* DENViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

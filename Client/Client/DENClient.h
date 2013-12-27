@@ -14,7 +14,6 @@
 - (void)connectWithHost:(NSString*)host andPort:(uint16_t)port;
 - (void)disconnect;
 
-@property BOOL connected;
-
+- (BOOL)isConnected;
 
 @end
