@@ -28,7 +28,6 @@ NS_ENUM(NSInteger, serverRequests) {
 
 // States
 @property BOOL handShaked;
-@property BOOL connected;
 
 - (void)completeHandshake;
 
@@ -39,7 +38,7 @@ NS_ENUM(NSInteger, serverRequests) {
 - (instancetype)init
 {
     if (self = [super init]) {
-        self.connected = FALSE;
+        self.connected = DISCONNECTED;
         self.host = @"192.168.0.7";
         self.port = 8080;
         self.handShaked = FALSE;
@@ -53,7 +52,7 @@ NS_ENUM(NSInteger, serverRequests) {
 
 - (void)connect
 {
-    if (self.connected == NO) {
+    if (self.connected == DISCONNECTED) {
         CFReadStreamRef readStream;
         CFWriteStreamRef writeStream;
         CFStreamCreatePairWithSocketToHost(NULL, (__bridge CFStringRef)self.host, self.port, &readStream, &writeStream);
@@ -65,6 +64,7 @@ NS_ENUM(NSInteger, serverRequests) {
         [self.outputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
         [self.inputStream open];
         [self.outputStream open];
+        self.connected = CONNECTING;
     } else {
         NSLog(@"ERROR: Server is already connected, we should never reach here");
     }
@@ -84,12 +84,7 @@ NS_ENUM(NSInteger, serverRequests) {
     [self.outputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
     [self.inputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
     
-    self.connected = NO;
-}
-
-- (BOOL)isConnected
-{
-    return self.connected;
+    self.connected = DISCONNECTED;
 }
 
 #pragma mark - NSStream Delegate
@@ -99,20 +94,17 @@ NS_ENUM(NSInteger, serverRequests) {
     switch (eventCode) {
         case NSStreamEventOpenCompleted:
         {
-            NSLog(@"Stream opened");
-            self.connected = YES;
+            self.connected = CONNECTED;
             break;
         }
             
         case NSStreamEventEndEncountered:
         {
-            NSLog(@"Stream ended");
             [self disconnect];
             break;
         }
             
         case NSStreamEventErrorOccurred:
-            NSLog(@"Couldn't connect to host");
             break;
             
         case NSStreamEventHasBytesAvailable:
