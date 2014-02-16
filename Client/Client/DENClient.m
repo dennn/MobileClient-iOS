@@ -207,7 +207,7 @@ NS_ENUM(NSInteger, serverRequests) {
     if (error) {
         NSLog(@"Error creating JSON while completing handshake");
     } else {
-        [self.outputStream write:[data bytes] maxLength:[data length]];
+        [self writeToOutputStream:data];
     }
 }
 
@@ -230,7 +230,7 @@ NS_ENUM(NSInteger, serverRequests) {
     if (error) {
         NSLog(@"Error creating JSON while sending data");
     } else {
-        [self.outputStream write:[data bytes] maxLength:[data length]];
+        [self writeToOutputStream:data];
     }
 }
 
