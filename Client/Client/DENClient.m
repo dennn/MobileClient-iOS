@@ -8,12 +8,17 @@
 
 #import "DENClient.h"
 #import "DENSensors.h"
+#import "NSMutableArray+Queue.h"
+
 @import CoreMotion;
 
 NS_ENUM(NSInteger, serverRequests) {
     NULL_REQUEST,
     HANDSHAKE,
-    GAME_DATA
+    GAME_DATA,
+    GAME_START,
+    GAME_END,
+    DISCONNECT_SERVER
 };
 
 @interface DENClient () <NSStreamDelegate>
@@ -28,8 +33,7 @@ NS_ENUM(NSInteger, serverRequests) {
 
 // States
 @property BOOL handShaked;
-
-- (void)completeHandshake;
+@property (nonatomic, strong) NSMutableArray *queue;
 
 @end
 
@@ -43,6 +47,7 @@ NS_ENUM(NSInteger, serverRequests) {
         self.port = 8080;
         self.handShaked = FALSE;
         self.sensorManager = [DENSensors new];
+        self.queue = [NSMutableArray new];
     }
     
     return self;
@@ -105,6 +110,7 @@ NS_ENUM(NSInteger, serverRequests) {
         }
             
         case NSStreamEventErrorOccurred:
+            NSLog(@"Error occurred in stream %@", [[aStream streamError] localizedDescription]);
             break;
             
         case NSStreamEventHasBytesAvailable:
@@ -116,7 +122,15 @@ NS_ENUM(NSInteger, serverRequests) {
         }
             
         case NSStreamEventHasSpaceAvailable:
+        {
+            if (aStream == self.outputStream) {
+                if ([self.queue isEmpty] == NO) {
+                    NSData *dataToSend = [self.queue dequeue];
+                    [self writeToOutputStream:dataToSend];
+                }
+            }
             break;
+        }
             
         default:
             NSLog(@"Unhandled event");
@@ -143,32 +157,44 @@ NS_ENUM(NSInteger, serverRequests) {
                     NSLog(@"Error parsing JSON %@", [error debugDescription]);
                 } else {
                     NSNumber *requestType = [JSONOutput objectForKey:@"Request_type"];
-                    switch ([requestType integerValue]) {
-                        case NULL_REQUEST:
-                            break;
-                            
-                        case HANDSHAKE:
-                        {
-                            if (self.handShaked == NO) {
-                                [self completeHandshake];
-                            } else {
-                                NSLog(@"Received duplicate handshake request, ignoring");
-                            }
-                            break;
-                        }
-                            
-                        case GAME_DATA:
-                        {
-                            [self sendGameDataForSensors:[JSONOutput objectForKey:@"Devices"]];
-                            break;
-                        }
-                            
-                        default:
-                            NSLog(@"Unrecognized request type");
-                    }
+                    [self processServerRequest:[requestType integerValue] withData:JSONOutput];
                 }
             }
         }
+    }
+}
+
+- (void)processServerRequest:(NSInteger)requestType withData:(NSDictionary *)JSONData
+{
+    switch (requestType) {
+        case NULL_REQUEST:
+            break;
+            
+        case HANDSHAKE:
+        {
+            if (self.handShaked == NO) {
+                [self completeHandshake];
+            } else {
+                NSLog(@"Received duplicate handshake request, disconnecting for sanity");
+                [self disconnect];
+            }
+            break;
+        }
+            
+        case GAME_DATA:
+        {
+            [self sendGameDataForSensors:[JSONData objectForKey:@"Devices"]];
+            break;
+        }
+            
+        case DISCONNECT_SERVER:
+        {
+            [self disconnect];
+            break;
+        }
+            
+        default:
+            NSLog(@"Unrecognized request type");
     }
 }
 
@@ -205,6 +231,16 @@ NS_ENUM(NSInteger, serverRequests) {
         NSLog(@"Error creating JSON while sending data");
     } else {
         [self.outputStream write:[data bytes] maxLength:[data length]];
+    }
+}
+
+- (void)writeToOutputStream:(NSData *)data
+{
+    if ([self.outputStream hasSpaceAvailable]) {
+        [self.outputStream write:[data bytes] maxLength:[data length]];
+    } else {
+        //We need to queue these operations when there is no space available.
+        [self.queue enqueue:data];
     }
 }
 

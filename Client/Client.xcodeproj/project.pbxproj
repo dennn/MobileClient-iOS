@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A209E98B18B0EDD700DA0A13 /* NSMutableArray+Queue.m in Sources */ = {isa = PBXBuildFile; fileRef = A209E98A18B0EDD700DA0A13 /* NSMutableArray+Queue.m */; };
 		A2721F0A186CCC5200CE2513 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A2721F09186CCC5200CE2513 /* Foundation.framework */; };
 		A2721F0C186CCC5200CE2513 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A2721F0B186CCC5200CE2513 /* CoreGraphics.framework */; };
 		A2721F0E186CCC5200CE2513 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A2721F0D186CCC5200CE2513 /* UIKit.framework */; };
@@ -36,6 +37,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		A209E98918B0EDD700DA0A13 /* NSMutableArray+Queue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableArray+Queue.h"; sourceTree = "<group>"; };
+		A209E98A18B0EDD700DA0A13 /* NSMutableArray+Queue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableArray+Queue.m"; sourceTree = "<group>"; };
 		A2721F06186CCC5200CE2513 /* Client.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Client.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2721F09186CCC5200CE2513 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		A2721F0B186CCC5200CE2513 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -85,6 +88,35 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		A209E98C18B0F3A000DA0A13 /* Controller */ = {
+			isa = PBXGroup;
+			children = (
+				A2721F1E186CCC5300CE2513 /* DENViewController.h */,
+				A2721F1F186CCC5300CE2513 /* DENViewController.m */,
+			);
+			name = Controller;
+			sourceTree = "<group>";
+		};
+		A209E98D18B0F3AB00DA0A13 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				A2906E6F186CD21A00B02D43 /* DENClient.h */,
+				A2906E70186CD21A00B02D43 /* DENClient.m */,
+				A2AC3856186E0D78006751A9 /* DENSensors.h */,
+				A2AC3857186E0D78006751A9 /* DENSensors.m */,
+			);
+			name = Model;
+			sourceTree = "<group>";
+		};
+		A209E98E18B0F3BB00DA0A13 /* Other */ = {
+			isa = PBXGroup;
+			children = (
+				A209E98918B0EDD700DA0A13 /* NSMutableArray+Queue.h */,
+				A209E98A18B0EDD700DA0A13 /* NSMutableArray+Queue.m */,
+			);
+			name = Other;
+			sourceTree = "<group>";
+		};
 		A2721EFD186CCC5200CE2513 = {
 			isa = PBXGroup;
 			children = (
@@ -118,15 +150,12 @@
 		A2721F0F186CCC5200CE2513 /* Client */ = {
 			isa = PBXGroup;
 			children = (
+				A209E98E18B0F3BB00DA0A13 /* Other */,
+				A209E98D18B0F3AB00DA0A13 /* Model */,
+				A209E98C18B0F3A000DA0A13 /* Controller */,
 				A2721F18186CCC5300CE2513 /* DENAppDelegate.h */,
 				A2721F19186CCC5300CE2513 /* DENAppDelegate.m */,
 				A2721F1B186CCC5300CE2513 /* Main.storyboard */,
-				A2721F1E186CCC5300CE2513 /* DENViewController.h */,
-				A2721F1F186CCC5300CE2513 /* DENViewController.m */,
-				A2906E6F186CD21A00B02D43 /* DENClient.h */,
-				A2906E70186CD21A00B02D43 /* DENClient.m */,
-				A2AC3856186E0D78006751A9 /* DENSensors.h */,
-				A2AC3857186E0D78006751A9 /* DENSensors.m */,
 				A2721F21186CCC5300CE2513 /* Images.xcassets */,
 				A2721F10186CCC5200CE2513 /* Supporting Files */,
 			);
@@ -265,6 +294,7 @@
 				A2721F16186CCC5200CE2513 /* main.m in Sources */,
 				A2AC3858186E0D78006751A9 /* DENSensors.m in Sources */,
 				A2721F20186CCC5300CE2513 /* DENViewController.m in Sources */,
+				A209E98B18B0EDD700DA0A13 /* NSMutableArray+Queue.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
