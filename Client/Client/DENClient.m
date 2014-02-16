@@ -21,6 +21,15 @@ NS_ENUM(NSInteger, serverRequests) {
     DISCONNECT_SERVER
 };
 
+typedef NS_ENUM(NSInteger, Error) {
+    DESERIALIZATION_ERROR = 101,
+    DATA_BEFORE_HANDSHAKE = 102,
+    HANDSHAKE_AFTER_HANDSHAKE = 103,
+    INVALID_REQUEST_TYPE = 104,
+    INVALID_DEVICE_CODE = 105,
+    DEVICE_UNAVAILABLE = 106
+};
+
 @interface DENClient () <NSStreamDelegate>
 
 // NSStreams
@@ -111,6 +120,7 @@ NS_ENUM(NSInteger, serverRequests) {
             
         case NSStreamEventErrorOccurred:
             NSLog(@"Error occurred in stream %@", [[aStream streamError] localizedDescription]);
+            [self disconnect];
             break;
             
         case NSStreamEventHasBytesAvailable:
@@ -164,7 +174,7 @@ NS_ENUM(NSInteger, serverRequests) {
                 NSError *error;
                 NSDictionary *JSONOutput = [NSJSONSerialization JSONObjectWithData:[input dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingAllowFragments error:&error];
                 if (error) {
-                    NSLog(@"Error parsing JSON %@", [error debugDescription]);
+                    [self writeToOutputStream:[DENClient createErrorMessageForCode:DESERIALIZATION_ERROR]];
                 } else {
                     NSNumber *requestType = [JSONOutput objectForKey:@"Request_type"];
                     [self processServerRequest:[requestType integerValue] withData:JSONOutput];
@@ -178,22 +188,28 @@ NS_ENUM(NSInteger, serverRequests) {
 {
     switch (requestType) {
         case NULL_REQUEST:
+        {
+            [self writeToOutputStream:[DENClient createErrorMessageForCode:INVALID_REQUEST_TYPE]];
             break;
+        }
             
         case HANDSHAKE:
         {
             if (self.handShaked == NO) {
                 [self completeHandshake];
             } else {
-                NSLog(@"Received duplicate handshake request, disconnecting for sanity");
-                [self disconnect];
+                [self writeToOutputStream:[DENClient createErrorMessageForCode:HANDSHAKE_AFTER_HANDSHAKE]];
             }
             break;
         }
             
         case GAME_DATA:
         {
-            [self sendGameDataForSensors:[JSONData objectForKey:@"Devices"]];
+            if (self.handShaked == NO) {
+                [self writeToOutputStream:[DENClient createErrorMessageForCode:DATA_BEFORE_HANDSHAKE]];
+            } else {
+                [self sendGameDataForSensors:[JSONData objectForKey:@"Devices"]];
+            }
             break;
         }
             
@@ -216,8 +232,9 @@ NS_ENUM(NSInteger, serverRequests) {
             break;
         }
             
-        default:
-            NSLog(@"Unrecognized request type");
+        default: {
+            [self writeToOutputStream:[DENClient createErrorMessageForCode:INVALID_REQUEST_TYPE]];
+        }
     }
 }
 
@@ -283,6 +300,65 @@ NS_ENUM(NSInteger, serverRequests) {
     } else {
         [self writeToOutputStream:data];
     }
+}
+
+#pragma mark - Errors
+
+//TODO: Look at using NSError instead, because its native blablabla...
+
+/*
+ * Return the JSON message as an NSData object so that we can send it along the stream
+ * socket.
+ */
++ (NSData *)createErrorMessageForCode:(Error)errorCode
+{
+    NSString *errorMessage = [DENClient getErrorMessageForCode:errorCode];
+    NSLog(@"ERROR: %@", errorMessage);
+    if (errorMessage == nil) {
+        return nil;
+    }
+    
+    NSDictionary *errorResponse = @{@"ErrorCode": @(errorCode),
+                                    @"Error": errorMessage};
+    NSError *error;
+    
+    NSData *data = [NSJSONSerialization dataWithJSONObject:errorResponse options:kNilOptions error:&error];
+
+    if (error) {
+        NSLog(@"Error creating JSON while creating error");
+    } else {
+        return data;
+    }
+    
+    return nil;
+}
+
+/* 
+ * Given an error code value, return a human readable description of it
+ */
++ (NSString *)getErrorMessageForCode:(Error)errorCode
+{
+    switch (errorCode) {
+        case DESERIALIZATION_ERROR:
+            return @"Request could not be deserialized";
+            
+        case DATA_BEFORE_HANDSHAKE:
+            return @"Data received before handshake";
+            
+        case HANDSHAKE_AFTER_HANDSHAKE:
+            return @"Handshake received after handshake";
+            
+        case INVALID_DEVICE_CODE:
+            return @"Invalid device code";
+            
+        case INVALID_REQUEST_TYPE:
+            return @"Invalid request type";
+            
+        case DEVICE_UNAVAILABLE:
+            return @"Device unavailable";
+    }
+    
+    return nil;
 }
 
 @end
