@@ -44,6 +44,8 @@
                     </view>
                     <connections>
                         <outlet property="connectButton" destination="ZML-VO-8J7" id="Xaq-0O-yF5"/>
+                        <outlet property="serverIP" destination="dgR-gU-olJ" id="RIo-ok-IvN"/>
+                        <outlet property="serverPort" destination="Cuh-qA-OVv" id="sBD-6z-rlW"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="x5A-6p-PRh" sceneMemberID="firstResponder"/>

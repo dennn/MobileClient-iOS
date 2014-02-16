@@ -8,13 +8,19 @@
 
 #import <Foundation/Foundation.h>
 
+typedef NS_ENUM(NSInteger, ConnectionState) {
+    CONNECTED,
+    DISCONNECTED,
+    CONNECTING
+};
+
 @interface DENClient : NSObject
 
+//Connection methods
 - (void)connect;
 - (void)connectWithHost:(NSString*)host andPort:(uint16_t)port;
 - (void)disconnect;
 
-@property BOOL connected;
-
+@property (nonatomic) ConnectionState connected;
 
 @end

@@ -7,22 +7,33 @@
 //
 
 #import "DENClient.h"
+#import "DENSensors.h"
+#import "NSMutableArray+Queue.h"
+
+@import CoreMotion;
 
 NS_ENUM(NSInteger, serverRequests) {
     NULL_REQUEST,
     HANDSHAKE,
-    GAME_DATA
+    GAME_DATA,
+    GAME_START,
+    GAME_END,
+    DISCONNECT_SERVER
 };
 
 @interface DENClient () <NSStreamDelegate>
 
+// NSStreams
 @property (nonatomic, strong) NSInputStream *inputStream;
 @property (nonatomic, strong) NSOutputStream *outputStream;
+// Socket details
 @property (nonatomic, strong) NSString *host;
 @property (nonatomic, assign) UInt32 port;
-@property BOOL handShaked;
+@property (nonatomic, strong) DENSensors *sensorManager;
 
-- (void)completeHandshake;
+// States
+@property BOOL handShaked;
+@property (nonatomic, strong) NSMutableArray *queue;
 
 @end
 
@@ -31,10 +42,12 @@ NS_ENUM(NSInteger, serverRequests) {
 - (instancetype)init
 {
     if (self = [super init]) {
-        self.connected = FALSE;
+        self.connected = DISCONNECTED;
         self.host = @"192.168.0.7";
         self.port = 8080;
         self.handShaked = FALSE;
+        self.sensorManager = [DENSensors new];
+        self.queue = [NSMutableArray new];
     }
     
     return self;
@@ -44,7 +57,7 @@ NS_ENUM(NSInteger, serverRequests) {
 
 - (void)connect
 {
-    if (self.connected == NO) {
+    if (self.connected == DISCONNECTED) {
         CFReadStreamRef readStream;
         CFWriteStreamRef writeStream;
         CFStreamCreatePairWithSocketToHost(NULL, (__bridge CFStringRef)self.host, self.port, &readStream, &writeStream);
@@ -56,6 +69,7 @@ NS_ENUM(NSInteger, serverRequests) {
         [self.outputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
         [self.inputStream open];
         [self.outputStream open];
+        self.connected = CONNECTING;
     } else {
         NSLog(@"ERROR: Server is already connected, we should never reach here");
     }
@@ -75,7 +89,7 @@ NS_ENUM(NSInteger, serverRequests) {
     [self.outputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
     [self.inputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
     
-    self.connected = NO;
+    self.connected = DISCONNECTED;
 }
 
 #pragma mark - NSStream Delegate
@@ -85,26 +99,35 @@ NS_ENUM(NSInteger, serverRequests) {
     switch (eventCode) {
         case NSStreamEventOpenCompleted:
         {
-            NSLog(@"Stream opened");
-            self.connected = YES;
+            self.connected = CONNECTED;
             break;
         }
             
         case NSStreamEventEndEncountered:
         {
-            NSLog(@"Stream ended");
             [self disconnect];
             break;
         }
             
         case NSStreamEventErrorOccurred:
-            NSLog(@"Couldn't connect to host");
+            NSLog(@"Error occurred in stream %@", [[aStream streamError] localizedDescription]);
             break;
             
         case NSStreamEventHasBytesAvailable:
         {
             if (aStream == self.inputStream) {
                 [self handleDataRead];
+            }
+            break;
+        }
+            
+        case NSStreamEventHasSpaceAvailable:
+        {
+            if (aStream == self.outputStream) {
+                if ([self.queue isEmpty] == NO) {
+                    NSData *dataToSend = [self.queue dequeue];
+                    [self writeToOutputStream:dataToSend];
+                }
             }
             break;
         }
@@ -121,45 +144,57 @@ NS_ENUM(NSInteger, serverRequests) {
     uint8_t buffer[1024];
     NSInteger len;
     
+    NSMutableString *input = [[NSMutableString alloc] init];
+    
     while ([self.inputStream hasBytesAvailable]) {
         len = [self.inputStream read:buffer maxLength:sizeof(buffer)];
         if (len > 0) {
-            NSString *stringInput = [[NSString alloc] initWithBytes:buffer length:sizeof(buffer) encoding:NSASCIIStringEncoding];
-            if (stringInput != nil) {
+            [input appendString: [[NSString alloc] initWithBytes:buffer length:len encoding:NSUTF8StringEncoding]];
+            if (input != nil) {
                 NSError *error;
-                /* We need to convert from ASCII to UTF-8 (which is const char *) and then back to an NSString. This is because NSJSONSerialization
-                 only takes UTF */
-                stringInput = [stringInput stringByTrimmingCharactersInSet:[NSCharacterSet controlCharacterSet]];
-                NSString *utfString = [NSString stringWithUTF8String:[stringInput UTF8String]];
-                NSDictionary *JSONOutput = [NSJSONSerialization JSONObjectWithData:[utfString dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingAllowFragments error:&error];
+                NSDictionary *JSONOutput = [NSJSONSerialization JSONObjectWithData:[input dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingAllowFragments error:&error];
                 if (error) {
                     NSLog(@"Error parsing JSON %@", [error debugDescription]);
                 } else {
-                   // NSLog(@"Output: %@", JSONOutput);
                     NSNumber *requestType = [JSONOutput objectForKey:@"Request_type"];
-                    switch ([requestType integerValue]) {
-                        case NULL_REQUEST:
-                            break;
-                            
-                        case HANDSHAKE:
-                        {
-                            if (self.handShaked == NO) {
-                                [self completeHandshake];
-                            } else {
-                                NSLog(@"Received duplicate handshake request, ignoring");
-                            }
-                            break;
-                        }
-                            
-                        case GAME_DATA:
-                            break;
-                            
-                        default:
-                            NSLog(@"Unrecognized request type");
-                    }
+                    [self processServerRequest:[requestType integerValue] withData:JSONOutput];
                 }
             }
         }
+    }
+}
+
+- (void)processServerRequest:(NSInteger)requestType withData:(NSDictionary *)JSONData
+{
+    switch (requestType) {
+        case NULL_REQUEST:
+            break;
+            
+        case HANDSHAKE:
+        {
+            if (self.handShaked == NO) {
+                [self completeHandshake];
+            } else {
+                NSLog(@"Received duplicate handshake request, disconnecting for sanity");
+                [self disconnect];
+            }
+            break;
+        }
+            
+        case GAME_DATA:
+        {
+            [self sendGameDataForSensors:[JSONData objectForKey:@"Devices"]];
+            break;
+        }
+            
+        case DISCONNECT_SERVER:
+        {
+            [self disconnect];
+            break;
+        }
+            
+        default:
+            NSLog(@"Unrecognized request type");
     }
 }
 
@@ -168,10 +203,45 @@ NS_ENUM(NSInteger, serverRequests) {
     NSDictionary *response = @{@"Response": @1};
     NSError *error;
     NSData *data = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];
-    NSString *utfString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-    NSData *asciiData = [utfString dataUsingEncoding:NSASCIIStringEncoding];
     
-    [self.outputStream write:[asciiData bytes] maxLength:[asciiData length]];
+    if (error) {
+        NSLog(@"Error creating JSON while completing handshake");
+    } else {
+        [self.outputStream write:[data bytes] maxLength:[data length]];
+    }
+}
+
+- (void)sendGameDataForSensors:(NSMutableArray *)sensors
+{
+    NSDictionary *response;
+    NSMutableDictionary *deviceDictionary = [NSMutableDictionary new];
+    NSError *error;
+
+    for (NSInteger i=0; i < [sensors count]; i++) {
+        NSNumber *sensorValue = (NSNumber *)[sensors objectAtIndex:i];
+        SensorType sensor = [DENSensors getSensorForID:[sensorValue integerValue]];
+        NSDictionary *sensorData = [self.sensorManager getSensorDataForSensor:sensor];
+        [deviceDictionary setObject:sensorData forKey:[NSString stringWithFormat:@"%li", sensor]];
+    }
+    
+    response = @{@"Devices": deviceDictionary};
+    
+    NSData *data = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];
+    if (error) {
+        NSLog(@"Error creating JSON while sending data");
+    } else {
+        [self.outputStream write:[data bytes] maxLength:[data length]];
+    }
+}
+
+- (void)writeToOutputStream:(NSData *)data
+{
+    if ([self.outputStream hasSpaceAvailable]) {
+        [self.outputStream write:[data bytes] maxLength:[data length]];
+    } else {
+        //We need to queue these operations when there is no space available.
+        [self.queue enqueue:data];
+    }
 }
 
 @end
