@@ -137,6 +137,16 @@ NS_ENUM(NSInteger, serverRequests) {
     }
 }
 
+- (void)writeToOutputStream:(NSData *)data
+{
+    if ([self.outputStream hasSpaceAvailable]) {
+        [self.outputStream write:[data bytes] maxLength:[data length]];
+    } else {
+        //We need to queue these operations when there is no space available.
+        [self.queue enqueue:data];
+    }
+}
+
 #pragma mark - JSON Parsing and writing
 
 - (void)handleDataRead
@@ -193,8 +203,36 @@ NS_ENUM(NSInteger, serverRequests) {
             break;
         }
             
+        case GAME_START:
+        {
+            //TODO: Implement the grid
+            [self completeGameStart];
+            break;
+        }
+            
+        case GAME_END:
+        {
+            [self completeGameEnd];
+            break;
+        }
+            
         default:
             NSLog(@"Unrecognized request type");
+    }
+}
+
+#pragma mark - Server requests
+
+- (void)completeGameStart
+{
+    NSDictionary *response = @{@"Response": @1};
+    NSError *error;
+    NSData *data = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];
+    
+    if (error) {
+        NSLog(@"Error creating JSON while completing game start");
+    } else {
+        [self writeToOutputStream:data];
     }
 }
 
@@ -206,6 +244,19 @@ NS_ENUM(NSInteger, serverRequests) {
     
     if (error) {
         NSLog(@"Error creating JSON while completing handshake");
+    } else {
+        [self writeToOutputStream:data];
+    }
+}
+
+- (void)completeGameEnd
+{
+    NSDictionary *response = @{@"Response": @1};
+    NSError *error;
+    NSData *data = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];
+    
+    if (error) {
+        NSLog(@"Error creating JSON while completing game end");
     } else {
         [self writeToOutputStream:data];
     }
@@ -231,16 +282,6 @@ NS_ENUM(NSInteger, serverRequests) {
         NSLog(@"Error creating JSON while sending data");
     } else {
         [self writeToOutputStream:data];
-    }
-}
-
-- (void)writeToOutputStream:(NSData *)data
-{
-    if ([self.outputStream hasSpaceAvailable]) {
-        [self.outputStream write:[data bytes] maxLength:[data length]];
-    } else {
-        //We need to queue these operations when there is no space available.
-        [self.queue enqueue:data];
     }
 }
 
