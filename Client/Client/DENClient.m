@@ -30,11 +30,16 @@ typedef NS_ENUM(NSInteger, Error) {
     DEVICE_UNAVAILABLE = 106
 };
 
-@interface DENClient () <NSStreamDelegate>
+static NSString * const kBonjourService = @"_gpserver._tcp.";
+
+@interface DENClient () <NSStreamDelegate, NSNetServiceBrowserDelegate, NSNetServiceDelegate>
 
 // NSStreams
 @property (nonatomic, strong) NSInputStream *inputStream;
 @property (nonatomic, strong) NSOutputStream *outputStream;
+// NSNetService
+@property (nonatomic, strong) NSNetServiceBrowser *serviceBrowser;
+@property (nonatomic, strong) NSNetService *serviceResolver;
 // Socket details
 @property (nonatomic, strong) NSString *host;
 @property (nonatomic, assign) UInt32 port;
@@ -51,12 +56,17 @@ typedef NS_ENUM(NSInteger, Error) {
 - (instancetype)init
 {
     if (self = [super init]) {
-        self.connected = DISCONNECTED;
-        self.host = @"192.168.0.7";
-        self.port = 8080;
-        self.handShaked = FALSE;
-        self.sensorManager = [DENSensors new];
-        self.queue = [NSMutableArray new];
+        _connected = DISCONNECTED;
+        _host = @"192.168.0.7";
+        _port = 8080;
+        _handShaked = NO;
+        _sensorManager = [DENSensors new];
+        _queue = [NSMutableArray new];
+        _serviceBrowser = [NSNetServiceBrowser new];
+        _serviceBrowser.delegate = self;
+        [_serviceBrowser searchForServicesOfType:kBonjourService inDomain:@"local"];
+        _serviceResolver = [NSNetService new];
+        _serviceResolver.delegate = self;
     }
     
     return self;
@@ -93,6 +103,9 @@ typedef NS_ENUM(NSInteger, Error) {
 
 - (void)disconnect
 {
+    self.handShaked = NO;
+    [self.queue removeAllObjects];
+    
     [self.inputStream close];
     [self.outputStream close];
     [self.outputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
@@ -263,6 +276,7 @@ typedef NS_ENUM(NSInteger, Error) {
         NSLog(@"Error creating JSON while completing handshake");
     } else {
         [self writeToOutputStream:data];
+        self.handShaked = YES;
     }
 }
 
@@ -359,6 +373,55 @@ typedef NS_ENUM(NSInteger, Error) {
     }
     
     return nil;
+}
+
+#pragma mark - NSServiceBrowser Delegate
+
+- (void)netServiceBrowserWillSearch:(NSNetServiceBrowser *)aNetServiceBrowser
+{
+    NSLog(@"Starting search");
+}
+
+- (void)netServiceBrowserDidStopSearch:(NSNetServiceBrowser *)aNetServiceBrowser
+{
+    NSLog(@"Stopped search");
+}
+
+- (void)netServiceBrowser:(NSNetServiceBrowser *)aNetServiceBrowser didFindService:(NSNetService *)aNetService moreComing:(BOOL)moreComing
+{
+    NSLog(@"Found service %@, resolving..., more coming: %d", aNetService.name, moreComing);
+    self.serviceResolver = aNetService;
+    self.serviceResolver.delegate = self;
+    [self.serviceResolver resolveWithTimeout:5.0];
+}
+
+#pragma mark - NSNetServiceDelegate
+
+- (void)netServiceDidResolveAddress:(NSNetService *)sender
+{
+    NSLog(@"Did resolve");
+    [self.serviceResolver stop];
+    
+    int count = 0;
+
+    for (NSData *data in sender.addresses) {
+        NSLog(@"Service name: %@ , ip: %@ , port %li", [sender name], [sender hostName], (long)[sender port]);
+        if (count == 0){
+            [self connectWithHost:[sender hostName] andPort:[sender port]];
+            count++;
+        }
+    }
+}
+
+- (void)netServiceWillResolve:(NSNetService *)sender
+{
+    NSLog(@"Will resolve net service");
+}
+
+- (void)netService:(NSNetService *)sender didNotResolve:(NSDictionary *)errorDict
+{
+    NSLog(@"Error resolving net service");
+    [self.serviceBrowser stop];
 }
 
 @end
