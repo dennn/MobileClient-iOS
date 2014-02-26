@@ -75,9 +75,9 @@
         {
             NSMutableDictionary *sensorDictionary = [NSMutableDictionary new];
             CMAccelerometerData *accelerometerData = self.sensorManager.accelerometerData;
-            [sensorDictionary setObject:[NSNumber numberWithDouble:(accelerometerData.acceleration.x*9.81)] forKey:@"X"];
-            [sensorDictionary setObject:[NSNumber numberWithDouble:(accelerometerData.acceleration.y*9.81)] forKey:@"Y"];
-            [sensorDictionary setObject:[NSNumber numberWithDouble:(accelerometerData.acceleration.z*9.81)] forKey:@"Z"];
+            [sensorDictionary setObject:[NSNumber numberWithDouble:(accelerometerData.acceleration.x*9.81*-1)] forKey:@"X"];
+            [sensorDictionary setObject:[NSNumber numberWithDouble:(accelerometerData.acceleration.y*9.81*-1)] forKey:@"Y"];
+            [sensorDictionary setObject:[NSNumber numberWithDouble:(accelerometerData.acceleration.z*9.81*-1)] forKey:@"Z"];
             return sensorDictionary;
         }
             
