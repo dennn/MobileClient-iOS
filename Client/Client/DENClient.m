@@ -44,6 +44,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 @property (nonatomic, strong) NSString *host;
 @property (nonatomic, assign) UInt32 port;
 @property (nonatomic, strong) DENSensors *sensorManager;
+@property (nonatomic, strong) NSString *username;
 
 // States
 @property BOOL handShaked;
@@ -58,6 +59,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
     if (self = [super init]) {
         _connected = DISCONNECTED;
         _host = @"192.168.0.7";
+        _username = @"Den";
         _port = 8080;
         _handShaked = NO;
         _sensorManager = [DENSensors new];
@@ -268,7 +270,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 
 - (void)completeHandshake
 {
-    NSDictionary *response = @{@"Response": @1};
+    NSDictionary *response = @{@"Response": @1, @"Username": self.username};
     NSError *error;
     NSData *data = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];
     
@@ -302,12 +304,14 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
     for (NSInteger i=0; i < [sensors count]; i++) {
         NSNumber *sensorValue = (NSNumber *)[sensors objectAtIndex:i];
         SensorType sensor = [DENSensors getSensorForID:[sensorValue integerValue]];
+        if (sensor == BUTTONS)
+            continue;
         NSDictionary *sensorData = [self.sensorManager getSensorDataForSensor:sensor];
         [deviceDictionary setObject:sensorData forKey:[NSString stringWithFormat:@"%li", sensor]];
     }
     
     response = @{@"Devices": deviceDictionary};
-    
+            
     NSData *data = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];
     if (error) {
         NSLog(@"Error creating JSON while sending data");
@@ -400,17 +404,13 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 - (void)netServiceDidResolveAddress:(NSNetService *)sender
 {
     NSLog(@"Did resolve");
-    [self.serviceResolver stop];
-    
-    int count = 0;
 
     for (NSData *data in sender.addresses) {
         NSLog(@"Service name: %@ , ip: %@ , port %li", [sender name], [sender hostName], (long)[sender port]);
-        if (count == 0){
-            [self connectWithHost:[sender hostName] andPort:[sender port]];
-            count++;
-        }
     }
+    
+    [self connectWithHost:[sender hostName] andPort:[sender port]];
+    [self.serviceResolver stop];
 }
 
 - (void)netServiceWillResolve:(NSNetService *)sender

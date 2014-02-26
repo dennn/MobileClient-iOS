@@ -13,8 +13,9 @@
 
 typedef NS_ENUM(NSInteger, SensorType) {
     NULL_DEVICE = 0,
-    ACCELEROMETER = 1,
-    GYROSCOPE = 2,
+    ACCELEROMETER = 2,
+    GYROSCOPE = 1,
+    BUTTONS = 3,
     NO_DEVICE = -1
 };
 

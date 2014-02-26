@@ -15,6 +15,7 @@
 @property (nonatomic, weak) IBOutlet UIButton *connectButton;
 @property (nonatomic, weak) IBOutlet UITextField *serverIP;
 @property (nonatomic, weak) IBOutlet UITextField *serverPort;
+@property (nonatomic, weak) IBOutlet UITextField *userName;
 
 @end
 

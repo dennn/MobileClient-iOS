@@ -75,9 +75,9 @@
         {
             NSMutableDictionary *sensorDictionary = [NSMutableDictionary new];
             CMAccelerometerData *accelerometerData = self.sensorManager.accelerometerData;
-            [sensorDictionary setObject:[NSNumber numberWithDouble:accelerometerData.acceleration.x*3] forKey:@"X"];
-            [sensorDictionary setObject:[NSNumber numberWithDouble:accelerometerData.acceleration.y*3] forKey:@"Y"];
-            [sensorDictionary setObject:[NSNumber numberWithDouble:accelerometerData.acceleration.z*3] forKey:@"Z"];
+            [sensorDictionary setObject:[NSNumber numberWithDouble:(accelerometerData.acceleration.x*9.81)] forKey:@"X"];
+            [sensorDictionary setObject:[NSNumber numberWithDouble:(accelerometerData.acceleration.y*9.81)] forKey:@"Y"];
+            [sensorDictionary setObject:[NSNumber numberWithDouble:(accelerometerData.acceleration.z*9.81)] forKey:@"Z"];
             return sensorDictionary;
         }
             
@@ -85,9 +85,9 @@
         {
             NSMutableDictionary *sensorDictionary = [NSMutableDictionary new];
             CMGyroData *gyroData = self.sensorManager.gyroData;
-            [sensorDictionary setObject:[NSNumber numberWithDouble:gyroData.rotationRate.x*3] forKey:@"X"];
-            [sensorDictionary setObject:[NSNumber numberWithDouble:gyroData.rotationRate.y*3] forKey:@"Y"];
-            [sensorDictionary setObject:[NSNumber numberWithDouble:gyroData.rotationRate.z*3] forKey:@"Z"];
+            [sensorDictionary setObject:[NSNumber numberWithDouble:gyroData.rotationRate.x] forKey:@"X"];
+            [sensorDictionary setObject:[NSNumber numberWithDouble:gyroData.rotationRate.y] forKey:@"Y"];
+            [sensorDictionary setObject:[NSNumber numberWithDouble:gyroData.rotationRate.z] forKey:@"Z"];
             return sensorDictionary;
         }
             
@@ -107,6 +107,9 @@
             
         case 2:
             return GYROSCOPE;
+            
+        case 3:
+            return BUTTONS;
             
         default:
             return NO_DEVICE;
