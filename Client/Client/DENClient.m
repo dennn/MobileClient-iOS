@@ -11,6 +11,7 @@
 #import "NSMutableArray+Queue.h"
 
 @import CoreMotion;
+@import AudioToolbox;
 
 NS_ENUM(NSInteger, serverRequests) {
     NULL_REQUEST,
@@ -18,7 +19,7 @@ NS_ENUM(NSInteger, serverRequests) {
     GAME_DATA,
     GAME_START,
     GAME_END,
-    DISCONNECT_SERVER
+    DISCONNECT
 };
 
 typedef NS_ENUM(NSInteger, Error) {
@@ -224,11 +225,12 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
                 [self writeToOutputStream:[DENClient createErrorMessageForCode:DATA_BEFORE_HANDSHAKE]];
             } else {
                 [self sendGameDataForSensors:[JSONData objectForKey:@"Devices"]];
+                [DENClient vibratePhoneForDuration:[[JSONData objectForKey:@"Virate"] integerValue]];
             }
             break;
         }
             
-        case DISCONNECT_SERVER:
+        case DISCONNECT:
         {
             [self disconnect];
             break;
@@ -307,7 +309,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
         if (sensor == BUTTONS)
             continue;
         NSDictionary *sensorData = [self.sensorManager getSensorDataForSensor:sensor];
-        [deviceDictionary setObject:sensorData forKey:[NSString stringWithFormat:@"%li", sensor]];
+        [deviceDictionary setObject:sensorData forKey:[NSString stringWithFormat:@"%i", sensor]];
     }
     
     response = @{@"Devices": deviceDictionary};
@@ -318,6 +320,14 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
     } else {
         [self writeToOutputStream:data];
     }
+}
+
++ (void)vibratePhoneForDuration:(NSInteger)milliseconds
+{
+    //There's no way to change the duration of a vibration in iOS,
+    //for now we should ignore the milliseconds and just play a single
+    //vibration of duration 0.5s
+    AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
 }
 
 #pragma mark - Errors
