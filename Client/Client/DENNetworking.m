@@ -32,9 +32,9 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 
 + (instancetype)networkingControllerOfNetworkingType:(NetworkingType)type
 {
-    if (type == Library){
+    if (type == LibrarySocket){
         return [[DENNetworkingGCDAsyncSocket alloc] init];
-    } else if (type == Native) {
+    } else if (type == NativeSocket) {
         return [[DENNetworkingNative alloc] init];
     } else {
         [NSException raise:NSInvalidArgumentException format:@"No known networking type provided"];
@@ -311,7 +311,6 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 {
     NSError *error;
     NSDictionary *JSONOutput = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:&error];
-    NSLog(@"%@", JSONOutput);
     if (error) {
         [self writeData:[DENClient createErrorMessageForCode:DESERIALIZATION_ERROR]];
     } else {
@@ -319,6 +318,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
         if ([self.delegate respondsToSelector:@selector(didReadServerRequest:withData:)]) {
             [self.delegate didReadServerRequest:[requestType integerValue] withData:JSONOutput];
         }
+        [self.socket readDataToData:[GCDAsyncSocket LFData] withTimeout:-1 tag:2];
     }
 }
 

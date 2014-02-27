@@ -9,8 +9,8 @@
 #import <Foundation/Foundation.h>
 
 typedef NS_ENUM(NSInteger, NetworkingType) {
-    Library,
-    Native
+    LibrarySocket,
+    NativeSocket
 };
 
 typedef NS_ENUM(NSInteger, ConnectionState) {

@@ -43,7 +43,7 @@ NS_ENUM(NSInteger, serverRequests) {
         _handShaked = NO;
         _sensorManager = [DENSensors new];
         // Specify whether to use raw sockets, or GCDAsyncSocket
-        _networkManager = [DENNetworking networkingControllerOfNetworkingType:Native];
+        _networkManager = [DENNetworking networkingControllerOfNetworkingType:LibrarySocket];
         _networkManager.delegate = self;
         [_networkManager searchForServices];
     }
@@ -202,12 +202,14 @@ NS_ENUM(NSInteger, serverRequests) {
     }
 }
 
-+ (void)vibratePhoneForDuration:(NSInteger)milliseconds
++ (void)vibratePhoneForDuration:(NSInteger)duration
 {
     //There's no way to change the duration of a vibration in iOS,
     //for now we should ignore the milliseconds and just play a single
     //vibration of duration 0.5s
-    AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
+    if (duration != 0) {
+        AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
+    }
 }
 
 #pragma mark - Errors
