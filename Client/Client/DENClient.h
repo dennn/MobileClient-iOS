@@ -22,7 +22,7 @@ typedef NS_ENUM(NSInteger, Error) {
 
 //Connection methods
 - (void)connect;
-- (void)connectWithHost:(NSString *)host andPort:(uint32_t)port;
+- (void)connectWithHost:(NSString *)host andPort:(uint16_t)port;
 - (void)disconnect;
 - (ConnectionState)isConnected;
 

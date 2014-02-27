@@ -9,6 +9,7 @@
 #import "DENNetworking.h"
 #import "DENClient.h"
 #import "NSMutableArray+Queue.h"
+#import <GCDAsyncSocket.h>
 
 static NSString * const kBonjourService = @"_gpserver._tcp.";
 
@@ -21,13 +22,17 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 
 @end
 
-@interface DENNetworkingGCDAsyncSocket : DENNetworking @end
+@interface DENNetworkingGCDAsyncSocket : DENNetworking <GCDAsyncSocketDelegate>
+
+@property (nonatomic, strong) GCDAsyncSocket *socket;
+
+@end
 
 @implementation DENNetworking
 
 + (instancetype)networkingControllerOfNetworkingType:(NetworkingType)type
 {
-    if (type == GCDAsyncSocket){
+    if (type == Library){
         return [[DENNetworkingGCDAsyncSocket alloc] init];
     } else if (type == Native) {
         return [[DENNetworkingNative alloc] init];
@@ -45,6 +50,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
         _serviceBrowser.delegate = self;
         _serviceResolver = [NSNetService new];
         _serviceResolver.delegate = self;
+        _connected = DISCONNECTED;
     }
     
     return self;
@@ -101,7 +107,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 }
 
 - (void)connect {}
-- (void)connectWithHost:(NSString *)host andPort:(uint32_t)port {}
+- (void)connectWithHost:(NSString *)host andPort:(uint16_t)port {}
 - (void)disconnect {}
 - (void)writeData:(NSData *)data {}
 
@@ -112,7 +118,6 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 - (instancetype)init
 {
     if (self = [super init]) {
-        self.connected = DISCONNECTED;
         self.queue = [NSMutableArray new];
     }
     
@@ -121,6 +126,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 
 - (void)connect
 {
+    self.connected = CONNECTING;
     CFReadStreamRef readStream;
     CFWriteStreamRef writeStream;
     CFStreamCreatePairWithSocketToHost(NULL, (__bridge CFStringRef)self.host, self.port, &readStream, &writeStream);
@@ -132,6 +138,13 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
     [self.outputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
     [self.inputStream open];
     [self.outputStream open];
+}
+
+- (void)connectWithHost:(NSString *)host andPort:(uint16_t)port
+{
+    self.host = host;
+    self.port = port;
+    [self connect];
 }
 
 - (void)disconnect
@@ -183,7 +196,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
             if (aStream == self.outputStream) {
                 if ([self.queue isEmpty] == NO) {
                     NSData *dataToSend = [self.queue dequeue];
-                    [self writeToOutputStream:dataToSend];
+                    [self writeData:dataToSend];
                 }
             }
             break;
@@ -211,7 +224,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
                 NSError *error;
                 NSDictionary *JSONOutput = [NSJSONSerialization JSONObjectWithData:[input dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingAllowFragments error:&error];
                 if (error) {
-                    [self writeToOutputStream:[DENClient createErrorMessageForCode:DESERIALIZATION_ERROR]];
+                    [self writeData:[DENClient createErrorMessageForCode:DESERIALIZATION_ERROR]];
                 } else {
                     NSNumber *requestType = [JSONOutput objectForKey:@"Request_type"];
                     if ([self.delegate respondsToSelector:@selector(didReadServerRequest:withData:)]) {
@@ -223,7 +236,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
     }
 }
 
-- (void)writeToOutputStream:(NSData *)data
+- (void)writeData:(NSData *)data
 {
     if ([self.outputStream hasSpaceAvailable]) {
         [self.outputStream write:[data bytes] maxLength:[data length]];
@@ -236,6 +249,79 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 @end
 
 @implementation DENNetworkingGCDAsyncSocket
+
+- (instancetype)init
+{
+    if (self = [super init]) {
+        _socket = [[GCDAsyncSocket alloc] initWithDelegate:self delegateQueue:dispatch_get_main_queue()];
+    }
+    
+    return self;
+}
+
+- (void)connect
+{
+    NSError *err = nil;
+    self.connected = CONNECTING;
+    if (![self.socket connectToHost:self.host onPort:self.port error:&err]) {
+        NSLog(@"Error connecting to host, %@", err);
+        self.connected = DISCONNECTED;
+    }
+}
+
+- (void)connectWithHost:(NSString *)host andPort:(uint16_t)port
+{
+    self.host = host;
+    self.port = port;
+    [self connect];
+}
+
+- (void)disconnect
+{
+    if ([self.delegate respondsToSelector:@selector(willDisconnect)]) {
+        [self.delegate willDisconnect];
+    }
+    
+    self.connected = DISCONNECTED;
+}
+
+#pragma mark - GCDAsyncSocket
+
+- (void)socket:(GCDAsyncSocket *)sock didConnectToHost:(NSString *)host port:(uint16_t)port
+{
+    self.connected = CONNECTED;
+    [self.socket readDataToData:[GCDAsyncSocket LFData] withTimeout:-1 tag:2];
+}
+
+- (void)socketDidDisconnect:(GCDAsyncSocket *)sock withError:(NSError *)err
+{
+    if ([self.delegate respondsToSelector:@selector(willDisconnect)]) {
+        [self.delegate willDisconnect];
+    }
+    
+    self.connected = DISCONNECTED;
+}
+
+- (void)writeData:(NSData *)data
+{
+    [self.socket writeData:data withTimeout:-1 tag:1];
+}
+
+- (void)socket:(GCDAsyncSocket *)sock didReadData:(NSData *)data withTag:(long)tag
+{
+    NSError *error;
+    NSDictionary *JSONOutput = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:&error];
+    NSLog(@"%@", JSONOutput);
+    if (error) {
+        [self writeData:[DENClient createErrorMessageForCode:DESERIALIZATION_ERROR]];
+    } else {
+        NSNumber *requestType = [JSONOutput objectForKey:@"Request_type"];
+        if ([self.delegate respondsToSelector:@selector(didReadServerRequest:withData:)]) {
+            [self.delegate didReadServerRequest:[requestType integerValue] withData:JSONOutput];
+        }
+    }
+}
+
 
 @end
 

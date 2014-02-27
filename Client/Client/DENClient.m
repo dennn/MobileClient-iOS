@@ -58,7 +58,7 @@ NS_ENUM(NSInteger, serverRequests) {
     [self.networkManager connect];
 }
 
-- (void)connectWithHost:(NSString *)host andPort:(uint32_t)port
+- (void)connectWithHost:(NSString *)host andPort:(uint16_t)port
 {
     [self.networkManager connectWithHost:host andPort:port];
 }
