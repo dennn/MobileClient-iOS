@@ -8,7 +8,6 @@
 
 #import "DENClient.h"
 #import "DENSensors.h"
-#import "NSMutableArray+Queue.h"
 
 @import CoreMotion;
 @import AudioToolbox;
@@ -22,34 +21,16 @@ NS_ENUM(NSInteger, serverRequests) {
     DISCONNECT
 };
 
-typedef NS_ENUM(NSInteger, Error) {
-    DESERIALIZATION_ERROR = 101,
-    DATA_BEFORE_HANDSHAKE = 102,
-    HANDSHAKE_AFTER_HANDSHAKE = 103,
-    INVALID_REQUEST_TYPE = 104,
-    INVALID_DEVICE_CODE = 105,
-    DEVICE_UNAVAILABLE = 106
-};
+@interface DENClient () <DENNetworkingProtocol>
 
-static NSString * const kBonjourService = @"_gpserver._tcp.";
-
-@interface DENClient () <NSStreamDelegate, NSNetServiceBrowserDelegate, NSNetServiceDelegate>
-
-// NSStreams
-@property (nonatomic, strong) NSInputStream *inputStream;
-@property (nonatomic, strong) NSOutputStream *outputStream;
-// NSNetService
-@property (nonatomic, strong) NSNetServiceBrowser *serviceBrowser;
-@property (nonatomic, strong) NSNetService *serviceResolver;
 // Socket details
-@property (nonatomic, strong) NSString *host;
-@property (nonatomic, assign) UInt32 port;
 @property (nonatomic, strong) DENSensors *sensorManager;
 @property (nonatomic, strong) NSString *username;
+//Networking
+@property (nonatomic, strong) DENNetworking *networkManager;
 
 // States
 @property BOOL handShaked;
-@property (nonatomic, strong) NSMutableArray *queue;
 
 @end
 
@@ -58,18 +39,13 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 - (instancetype)init
 {
     if (self = [super init]) {
-        _connected = DISCONNECTED;
-        _host = @"192.168.0.7";
         _username = @"Den";
-        _port = 8080;
         _handShaked = NO;
         _sensorManager = [DENSensors new];
-        _queue = [NSMutableArray new];
-        _serviceBrowser = [NSNetServiceBrowser new];
-        _serviceBrowser.delegate = self;
-        [_serviceBrowser searchForServicesOfType:kBonjourService inDomain:@"local"];
-        _serviceResolver = [NSNetService new];
-        _serviceResolver.delegate = self;
+        // Specify whether to use raw sockets, or GCDAsyncSocket
+        _networkManager = [DENNetworking networkingControllerOfNetworkingType:Native];
+        _networkManager.delegate = self;
+        [_networkManager searchForServices];
     }
     
     return self;
@@ -79,133 +55,37 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 
 - (void)connect
 {
-    if (self.connected == DISCONNECTED) {
-        CFReadStreamRef readStream;
-        CFWriteStreamRef writeStream;
-        CFStreamCreatePairWithSocketToHost(NULL, (__bridge CFStringRef)self.host, self.port, &readStream, &writeStream);
-        self.inputStream = (__bridge_transfer NSInputStream *)readStream;
-        self.outputStream = (__bridge_transfer NSOutputStream *)writeStream;
-        self.inputStream.delegate = self;
-        self.outputStream.delegate = self;
-        [self.inputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-        [self.outputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-        [self.inputStream open];
-        [self.outputStream open];
-        self.connected = CONNECTING;
-    } else {
-        NSLog(@"ERROR: Server is already connected, we should never reach here");
-    }
+    [self.networkManager connect];
 }
 
-- (void)connectWithHost:(NSString *)host andPort:(uint16_t)port
+- (void)connectWithHost:(NSString *)host andPort:(uint32_t)port
 {
-    self.host = host;
-    self.port = port;
-    [self connect];
+    [self.networkManager connectWithHost:host andPort:port];
 }
 
 - (void)disconnect
 {
+    [self.networkManager disconnect];
+}
+
+- (void)willDisconnect
+{
     self.handShaked = NO;
-    [self.queue removeAllObjects];
-    
-    [self.inputStream close];
-    [self.outputStream close];
-    [self.outputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-    [self.inputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-    
-    self.connected = DISCONNECTED;
 }
 
-#pragma mark - NSStream Delegate
-
-- (void)stream:(NSStream *)aStream handleEvent:(NSStreamEvent)eventCode
+- (ConnectionState)isConnected
 {
-    switch (eventCode) {
-        case NSStreamEventOpenCompleted:
-        {
-            self.connected = CONNECTED;
-            break;
-        }
-            
-        case NSStreamEventEndEncountered:
-        {
-            [self disconnect];
-            break;
-        }
-            
-        case NSStreamEventErrorOccurred:
-            NSLog(@"Error occurred in stream %@", [[aStream streamError] localizedDescription]);
-            [self disconnect];
-            break;
-            
-        case NSStreamEventHasBytesAvailable:
-        {
-            if (aStream == self.inputStream) {
-                [self handleDataRead];
-            }
-            break;
-        }
-            
-        case NSStreamEventHasSpaceAvailable:
-        {
-            if (aStream == self.outputStream) {
-                if ([self.queue isEmpty] == NO) {
-                    NSData *dataToSend = [self.queue dequeue];
-                    [self writeToOutputStream:dataToSend];
-                }
-            }
-            break;
-        }
-            
-        default:
-            NSLog(@"Unhandled event");
-    }
+    return [self.networkManager connected];
 }
 
-- (void)writeToOutputStream:(NSData *)data
-{
-    if ([self.outputStream hasSpaceAvailable]) {
-        [self.outputStream write:[data bytes] maxLength:[data length]];
-    } else {
-        //We need to queue these operations when there is no space available.
-        [self.queue enqueue:data];
-    }
-}
+#pragma mark - Server event handling
 
-#pragma mark - JSON Parsing and writing
-
-- (void)handleDataRead
-{
-    uint8_t buffer[1024];
-    NSInteger len;
-    
-    NSMutableString *input = [[NSMutableString alloc] init];
-    
-    while ([self.inputStream hasBytesAvailable]) {
-        len = [self.inputStream read:buffer maxLength:sizeof(buffer)];
-        if (len > 0) {
-            [input appendString: [[NSString alloc] initWithBytes:buffer length:len encoding:NSUTF8StringEncoding]];
-            if (input != nil) {
-                NSError *error;
-                NSDictionary *JSONOutput = [NSJSONSerialization JSONObjectWithData:[input dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingAllowFragments error:&error];
-                if (error) {
-                    [self writeToOutputStream:[DENClient createErrorMessageForCode:DESERIALIZATION_ERROR]];
-                } else {
-                    NSNumber *requestType = [JSONOutput objectForKey:@"Request_type"];
-                    [self processServerRequest:[requestType integerValue] withData:JSONOutput];
-                }
-            }
-        }
-    }
-}
-
-- (void)processServerRequest:(NSInteger)requestType withData:(NSDictionary *)JSONData
+- (void)didReadServerRequest:(NSInteger)requestType withData:(NSDictionary *)JSONData
 {
     switch (requestType) {
         case NULL_REQUEST:
         {
-            [self writeToOutputStream:[DENClient createErrorMessageForCode:INVALID_REQUEST_TYPE]];
+            [self.networkManager writeData:[DENClient createErrorMessageForCode:INVALID_REQUEST_TYPE]];
             break;
         }
             
@@ -214,7 +94,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
             if (self.handShaked == NO) {
                 [self completeHandshake];
             } else {
-                [self writeToOutputStream:[DENClient createErrorMessageForCode:HANDSHAKE_AFTER_HANDSHAKE]];
+                [self.networkManager writeData:[DENClient createErrorMessageForCode:HANDSHAKE_AFTER_HANDSHAKE]];
             }
             break;
         }
@@ -222,7 +102,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
         case GAME_DATA:
         {
             if (self.handShaked == NO) {
-                [self writeToOutputStream:[DENClient createErrorMessageForCode:DATA_BEFORE_HANDSHAKE]];
+                [self.networkManager writeData:[DENClient createErrorMessageForCode:DATA_BEFORE_HANDSHAKE]];
             } else {
                 [self sendGameDataForSensors:[JSONData objectForKey:@"Devices"]];
                 [DENClient vibratePhoneForDuration:[[JSONData objectForKey:@"Virate"] integerValue]];
@@ -250,7 +130,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
         }
             
         default: {
-            [self writeToOutputStream:[DENClient createErrorMessageForCode:INVALID_REQUEST_TYPE]];
+            [self.networkManager writeData:[DENClient createErrorMessageForCode:INVALID_REQUEST_TYPE]];
         }
     }
 }
@@ -266,7 +146,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
     if (error) {
         NSLog(@"Error creating JSON while completing game start");
     } else {
-        [self writeToOutputStream:data];
+        [self.networkManager writeData:data];
     }
 }
 
@@ -279,7 +159,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
     if (error) {
         NSLog(@"Error creating JSON while completing handshake");
     } else {
-        [self writeToOutputStream:data];
+        [self.networkManager writeData:data];
         self.handShaked = YES;
     }
 }
@@ -293,7 +173,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
     if (error) {
         NSLog(@"Error creating JSON while completing game end");
     } else {
-        [self writeToOutputStream:data];
+        [self.networkManager writeData:data];
     }
 }
 
@@ -309,7 +189,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
         if (sensor == BUTTONS)
             continue;
         NSDictionary *sensorData = [self.sensorManager getSensorDataForSensor:sensor];
-        [deviceDictionary setObject:sensorData forKey:[NSString stringWithFormat:@"%i", sensor]];
+        [deviceDictionary setObject:sensorData forKey:[NSString stringWithFormat:@"%li", sensor]];
     }
     
     response = @{@"Devices": deviceDictionary};
@@ -318,7 +198,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
     if (error) {
         NSLog(@"Error creating JSON while sending data");
     } else {
-        [self writeToOutputStream:data];
+        [self.networkManager writeData:data];
     }
 }
 
@@ -387,51 +267,6 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
     }
     
     return nil;
-}
-
-#pragma mark - NSServiceBrowser Delegate
-
-- (void)netServiceBrowserWillSearch:(NSNetServiceBrowser *)aNetServiceBrowser
-{
-    NSLog(@"Starting search");
-}
-
-- (void)netServiceBrowserDidStopSearch:(NSNetServiceBrowser *)aNetServiceBrowser
-{
-    NSLog(@"Stopped search");
-}
-
-- (void)netServiceBrowser:(NSNetServiceBrowser *)aNetServiceBrowser didFindService:(NSNetService *)aNetService moreComing:(BOOL)moreComing
-{
-    NSLog(@"Found service %@, resolving..., more coming: %d", aNetService.name, moreComing);
-    self.serviceResolver = aNetService;
-    self.serviceResolver.delegate = self;
-    [self.serviceResolver resolveWithTimeout:5.0];
-}
-
-#pragma mark - NSNetServiceDelegate
-
-- (void)netServiceDidResolveAddress:(NSNetService *)sender
-{
-    NSLog(@"Did resolve");
-
-    for (NSData *data in sender.addresses) {
-        NSLog(@"Service name: %@ , ip: %@ , port %li", [sender name], [sender hostName], (long)[sender port]);
-    }
-    
-    [self connectWithHost:[sender hostName] andPort:[sender port]];
-    [self.serviceResolver stop];
-}
-
-- (void)netServiceWillResolve:(NSNetService *)sender
-{
-    NSLog(@"Will resolve net service");
-}
-
-- (void)netService:(NSNetService *)sender didNotResolve:(NSDictionary *)errorDict
-{
-    NSLog(@"Error resolving net service");
-    [self.serviceBrowser stop];
 }
 
 @end
