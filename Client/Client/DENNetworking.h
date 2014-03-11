@@ -23,6 +23,7 @@ typedef NS_ENUM(NSInteger, ConnectionState) {
 
 - (void)didReadServerRequest:(NSInteger)requestType withData:(NSDictionary *)JSONData;
 - (void)willDisconnect;
+- (void)didConnect;
 
 @end
 
@@ -39,14 +40,5 @@ typedef NS_ENUM(NSInteger, ConnectionState) {
 
 // Delegate
 @property (nonatomic, weak) id <DENNetworkingProtocol> delegate;
-// Socket state
-@property (nonatomic) ConnectionState connected;
-// Socket details
-@property (nonatomic, strong) NSString *host;
-@property (nonatomic, assign) uint16_t port;
-// NSNetService
-@property (nonatomic, strong) NSNetServiceBrowser *serviceBrowser;
-@property (nonatomic, strong) NSNetService *serviceResolver;
-
 
 @end

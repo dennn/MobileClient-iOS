@@ -13,6 +13,19 @@
 
 static NSString * const kBonjourService = @"_gpserver._tcp.";
 
+@interface DENNetworking () 
+
+// Socket state
+@property (nonatomic, assign) ConnectionState connected;
+// Socket details
+@property (nonatomic, strong) NSString *host;
+@property (nonatomic, assign) uint16_t port;
+// NSNetService
+@property (nonatomic, strong) NSNetServiceBrowser *serviceBrowser;
+@property (nonatomic, strong) NSNetService *serviceResolver;
+
+@end
+
 @interface DENNetworkingNative : DENNetworking <NSStreamDelegate>
 
 // NSStreams
@@ -84,13 +97,8 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 #pragma mark - NSNetServiceDelegate
 
 - (void)netServiceDidResolveAddress:(NSNetService *)sender
-{
-    NSLog(@"Did resolve");
-    
-    for (NSData *data in sender.addresses) {
-        NSLog(@"Service name: %@ , ip: %@ , port %li", [sender name], [sender hostName], (long)[sender port]);
-    }
-    
+{    
+    NSLog(@"Service name: %@ , ip: %@ , port %li", [sender name], [sender hostName], (long)[sender port]);
     [self connectWithHost:[sender hostName] andPort:(uint32_t)[sender port]];
     [self.serviceResolver stop];
 }
@@ -291,6 +299,9 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 {
     self.connected = CONNECTED;
     [self.socket readDataToData:[GCDAsyncSocket LFData] withTimeout:-1 tag:2];
+    if ([self.delegate respondsToSelector:@selector(didConnect)]) {
+        [self.delegate didConnect];
+    }
 }
 
 - (void)socketDidDisconnect:(GCDAsyncSocket *)sock withError:(NSError *)err
@@ -304,6 +315,8 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 
 - (void)writeData:(NSData *)data
 {
+    NSDictionary *JSONOutput = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:nil];
+    NSLog(@"%@", JSONOutput);
     [self.socket writeData:data withTimeout:-1 tag:1];
 }
 
@@ -315,6 +328,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
         [self writeData:[DENClient createErrorMessageForCode:DESERIALIZATION_ERROR]];
     } else {
         NSNumber *requestType = [JSONOutput objectForKey:@"Request_type"];
+        NSLog(@"%@", JSONOutput);
         if ([self.delegate respondsToSelector:@selector(didReadServerRequest:withData:)]) {
             [self.delegate didReadServerRequest:[requestType integerValue] withData:JSONOutput];
         }

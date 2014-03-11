@@ -22,8 +22,8 @@
 - (instancetype)init
 {
     if (self = [super init]) {
-        self.sensorManager = [[CMMotionManager alloc] init];
-        self.sensors = [[NSMutableSet alloc] init];
+        _sensorManager = [[CMMotionManager alloc] init];
+        _sensors = [[NSMutableSet alloc] init];
     }
     
     return self;

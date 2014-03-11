@@ -47,7 +47,7 @@
 
 - (IBAction)connectToServer:(id)sender
 {
-    switch ([self.client isConnected]) {
+    switch (self.client.connected) {
         case CONNECTED:
             [self.client disconnect];
             break;

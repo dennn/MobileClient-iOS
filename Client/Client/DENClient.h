@@ -24,8 +24,9 @@ typedef NS_ENUM(NSInteger, Error) {
 - (void)connect;
 - (void)connectWithHost:(NSString *)host andPort:(uint16_t)port;
 - (void)disconnect;
-- (ConnectionState)isConnected;
 
 + (NSData *)createErrorMessageForCode:(Error)errorCode;
+
+@property (nonatomic, assign) ConnectionState connected;
 
 @end

@@ -36,16 +36,19 @@ NS_ENUM(NSInteger, serverRequests) {
 
 @implementation DENClient
 
+#pragma mark - Initialization
+
 - (instancetype)init
 {
     if (self = [super init]) {
-        _username = @"Den";
+        _username = @"Guest_iOS";
         _handShaked = NO;
         _sensorManager = [DENSensors new];
         // Specify whether to use raw sockets, or GCDAsyncSocket
         _networkManager = [DENNetworking networkingControllerOfNetworkingType:LibrarySocket];
         _networkManager.delegate = self;
         [_networkManager searchForServices];
+        _connected = DISCONNECTED;
     }
     
     return self;
@@ -56,11 +59,17 @@ NS_ENUM(NSInteger, serverRequests) {
 - (void)connect
 {
     [self.networkManager connect];
+    self.connected = CONNECTING;
 }
 
 - (void)connectWithHost:(NSString *)host andPort:(uint16_t)port
 {
     [self.networkManager connectWithHost:host andPort:port];
+}
+
+- (void)didConnect
+{
+    self.connected = CONNECTED;
 }
 
 - (void)disconnect
@@ -71,11 +80,7 @@ NS_ENUM(NSInteger, serverRequests) {
 - (void)willDisconnect
 {
     self.handShaked = NO;
-}
-
-- (ConnectionState)isConnected
-{
-    return [self.networkManager connected];
+    self.connected = DISCONNECTED;
 }
 
 #pragma mark - Server event handling
@@ -105,7 +110,7 @@ NS_ENUM(NSInteger, serverRequests) {
                 [self.networkManager writeData:[DENClient createErrorMessageForCode:DATA_BEFORE_HANDSHAKE]];
             } else {
                 [self sendGameDataForSensors:[JSONData objectForKey:@"Devices"]];
-                [DENClient vibratePhoneForDuration:[[JSONData objectForKey:@"Virate"] integerValue]];
+                [DENClient vibratePhoneForDuration:[[JSONData objectForKey:@"Vibrate"] integerValue]];
             }
             break;
         }
@@ -129,7 +134,8 @@ NS_ENUM(NSInteger, serverRequests) {
             break;
         }
             
-        default: {
+        default:
+        {
             [self.networkManager writeData:[DENClient createErrorMessageForCode:INVALID_REQUEST_TYPE]];
         }
     }
