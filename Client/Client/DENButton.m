@@ -16,6 +16,7 @@
         _title = [data objectForKey:@"Title"];
         _x = [[data objectForKey:@"x"] integerValue];
         _y = [[data objectForKey:@"y"] integerValue];
+        _ID = ID;
     }
     
     return self;
@@ -24,6 +25,11 @@
 - (NSIndexPath *)indexPathForRows:(NSInteger)rows
 {
     return [NSIndexPath indexPathForItem:((self.y * rows) + self.x) inSection:0];
+}
+
+- (NSNumber *)getIDAsNumber;
+{
+    return [NSNumber numberWithInteger:self.ID];
 }
 
 @end

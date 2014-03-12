@@ -12,8 +12,10 @@
 
 - (instancetype)initWithDictionary:(NSDictionary *)data andID:(NSInteger)ID;
 - (NSIndexPath *)indexPathForRows:(NSInteger)rows;
+- (NSNumber *)getIDAsNumber;
 
 @property (nonatomic, strong) NSString *title;
+@property (nonatomic, assign) NSInteger ID;
 @property (nonatomic, assign) NSInteger x;
 @property (nonatomic, assign) NSInteger y;
 

@@ -15,6 +15,7 @@
 @property (nonatomic, assign) NSInteger rows;
 @property (nonatomic, assign) NSInteger columns;
 @property (nonatomic, strong) NSMutableDictionary *buttons;
+@property (nonatomic, strong) NSMutableDictionary *pressedButtons;
 
 @end
 
@@ -23,6 +24,7 @@
 - (instancetype)init {
     if (self = [super init]) {
         _buttons = [NSMutableDictionary new];
+        _pressedButtons = [NSMutableDictionary new];
     }
     return self;
 }
@@ -38,6 +40,7 @@
             NSNumber *buttonID = [NSNumber numberWithInteger:[key integerValue]];
             DENButton *newButton = [[DENButton alloc] initWithDictionary:obj andID:[buttonID integerValue]];
             [self.buttons setObject:newButton forKey:[newButton indexPathForRows:self.rows]];
+            [self.pressedButtons setObject:[NSNumber numberWithInteger:RELEASED] forKey:buttonID];
         }
     }];
     
@@ -53,10 +56,6 @@
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {
-    if ([self.buttons count] == 0) {
-        NSLog(@"FUCK %@", self);
-    }
-    NSLog(@"Number buttons requested %lu %@", (unsigned long)[self.buttons count], self.buttons);
     return [self.buttons count];
 }
 
@@ -64,9 +63,34 @@
 {
     DENButtonCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"BUTTON_CELL" forIndexPath:indexPath];
     DENButton *button = [self.buttons objectForKey:indexPath];
-    cell.cellTitle.text = button.title;
+    [cell.cellButton setTitle:button.title forState:UIControlStateNormal];
+    [cell.cellButton setTag:button.ID];
+    [cell.cellButton addTarget:self action:@selector(buttonPressed:) forControlEvents:UIControlEventTouchUpInside];
+    [cell.cellButton addTarget:self action:@selector(buttonReleased:) forControlEvents:UIControlEventTouchUpOutside];
+    [cell setImagesForIndexPath:indexPath];
     
     return cell;
+}
+
+#pragma mark - Button Sending
+
+- (void)buttonPressed:(id)sender
+{
+    UIButton *button = (UIButton *)sender;
+    [self.pressedButtons setObject:[NSNumber numberWithInteger:PRESSED] forKey:[NSNumber numberWithInteger:button.tag]];
+}
+
+- (void)buttonReleased:(id)sender
+{
+    UIButton *button = (UIButton *)sender;
+    [self.pressedButtons setObject:[NSNumber numberWithInteger:RELEASED] forKey:[NSNumber numberWithInteger:button.tag]];
+}
+
+- (NSDictionary *)getButtonDataForID:(NSInteger)ID
+{
+    NSDictionary *stateDictionary = @{@"State" : [self.pressedButtons objectForKey:[NSNumber numberWithInteger:ID]]};
+    
+    return stateDictionary;
 }
 
 @end

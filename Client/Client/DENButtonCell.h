@@ -10,6 +10,8 @@
 
 @interface DENButtonCell : UICollectionViewCell
 
-@property (weak, nonatomic) IBOutlet UILabel *cellTitle;
+- (void)setImagesForIndexPath:(NSIndexPath *)indexPath;
+
+@property (weak, nonatomic) IBOutlet UIButton *cellButton;
 
 @end

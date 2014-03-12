@@ -134,7 +134,6 @@ NS_ENUM(NSInteger, serverRequests) {
             
         case GAME_START:
         {
-            //TODO: Implement the grid
             [self.buttonManager processGameData:[JSONData objectForKey:@"Buttons"]];
             [self completeGameStart];
             break;
@@ -204,10 +203,13 @@ NS_ENUM(NSInteger, serverRequests) {
     for (NSInteger i=0; i < [sensors count]; i++) {
         NSNumber *sensorValue = (NSNumber *)[sensors objectAtIndex:i];
         SensorType sensor = [DENSensors getSensorForID:[sensorValue integerValue]];
-        if (sensor == BUTTONS)
-            continue;
-        NSDictionary *sensorData = [self.sensorManager getSensorDataForSensor:sensor];
-        [deviceDictionary setObject:sensorData forKey:[NSString stringWithFormat:@"%li", sensor]];
+        NSDictionary *sensorData;
+        if (sensor == BUTTONS) {
+            sensorData = [self.buttonManager getButtonDataForID:sensor];
+        } else {
+            sensorData = [self.sensorManager getSensorDataForSensor:sensor];
+        }
+        [deviceDictionary setObject:sensorData forKey:[NSString stringWithFormat:@"%li", (long)[sensorValue integerValue]]];
     }
     
     response = @{@"Devices": deviceDictionary};

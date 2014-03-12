@@ -98,6 +98,10 @@
 
 + (SensorType)getSensorForID:(NSInteger)sensorID
 {
+    if (sensorID >= 3) {
+        return BUTTONS;
+    }
+    
     switch (sensorID) {
         case 0:
             return NULL_DEVICE;
@@ -107,9 +111,6 @@
             
         case 2:
             return GYROSCOPE;
-            
-        case 3:
-            return BUTTONS;
             
         default:
             return NO_DEVICE;
