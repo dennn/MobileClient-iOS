@@ -7,7 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "DENClient.h"
 
 @interface DENButtonViewController : UICollectionViewController
+
+@property (nonatomic, strong) DENClient *client;
 
 @end

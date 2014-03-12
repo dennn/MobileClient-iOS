@@ -7,6 +7,7 @@
 //
 
 #import "DENButtonViewController.h"
+#import "DENConnectionViewController.h"
 
 @interface DENButtonViewController ()
 
@@ -27,6 +28,17 @@
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view.
+    self.client = [DENClient sharedManager];
+    self.collectionView.dataSource = self.client.buttonManager;
+    self.client.buttonManager.collectionView = self.collectionView;
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [self.client addObserver:self   
+                  forKeyPath:@"connected"
+                     options: NSKeyValueObservingOptionNew
+                     context:nil];
 }
 
 - (void)didReceiveMemoryWarning
@@ -35,10 +47,25 @@
     // Dispose of any resources that can be recreated.
 }
 
-- (void)showServerSelection
+- (void)viewWillDisappear:(BOOL)animated
 {
-    [self performSegueWithIdentifier:@"ServerSelection" sender:self];
+    [self.client removeObserver:self forKeyPath:@"connected"];
 }
 
+#pragma mark - KVO
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+    if ([keyPath isEqualToString:@"connected"] && [object isKindOfClass:[DENClient class]]) {
+        [self loadConnectionViewController];
+    }
+}
+
+#pragma mark - View Controller Transition
+
+- (void)loadConnectionViewController
+{
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
 
 @end

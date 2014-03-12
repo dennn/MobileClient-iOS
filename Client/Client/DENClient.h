@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "DENNetworking.h"
+#import "DENButtonManager.h"
 
 typedef NS_ENUM(NSInteger, Error) {
     DESERIALIZATION_ERROR = 101,
@@ -27,6 +28,9 @@ typedef NS_ENUM(NSInteger, Error) {
 
 + (NSData *)createErrorMessageForCode:(Error)errorCode;
 
++ (id)sharedManager;
+
 @property (nonatomic, assign) ConnectionState connected;
+@property (nonatomic, strong) DENButtonManager *buttonManager;
 
 @end

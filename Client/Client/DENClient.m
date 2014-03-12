@@ -8,6 +8,7 @@
 
 #import "DENClient.h"
 #import "DENSensors.h"
+#import "DENButtonManager.h"
 
 @import CoreMotion;
 @import AudioToolbox;
@@ -38,6 +39,15 @@ NS_ENUM(NSInteger, serverRequests) {
 
 #pragma mark - Initialization
 
++ (id)sharedManager {
+    static DENClient *sharedMyManager = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sharedMyManager = [[self alloc] init];
+    });
+    return sharedMyManager;
+}
+
 - (instancetype)init
 {
     if (self = [super init]) {
@@ -49,6 +59,7 @@ NS_ENUM(NSInteger, serverRequests) {
         _networkManager.delegate = self;
         [_networkManager searchForServices];
         _connected = DISCONNECTED;
+        _buttonManager = [DENButtonManager new];
     }
     
     return self;
@@ -124,6 +135,7 @@ NS_ENUM(NSInteger, serverRequests) {
         case GAME_START:
         {
             //TODO: Implement the grid
+            [self.buttonManager processGameData:[JSONData objectForKey:@"Buttons"]];
             [self completeGameStart];
             break;
         }

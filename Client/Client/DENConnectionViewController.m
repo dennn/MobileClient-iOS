@@ -6,12 +6,11 @@
 //  Copyright (c) 2013 Mulan. All rights reserved.
 //
 
-#import "DENViewController.h"
-#import "DENClient.h"
+#import "DENConnectionViewController.h"
+#import "DENButtonViewController.h"
 
-@interface DENViewController ()
+@interface DENConnectionViewController ()
 
-@property (nonatomic, strong) DENClient *client;
 @property (nonatomic, weak) IBOutlet UIButton *connectButton;
 @property (nonatomic, weak) IBOutlet UITextField *serverIP;
 @property (nonatomic, weak) IBOutlet UITextField *serverPort;
@@ -19,15 +18,18 @@
 
 @end
 
-@implementation DENViewController
+@implementation DENConnectionViewController
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
     
-    self.client = [[DENClient alloc] init];
-    
+    self.client = [DENClient sharedManager];
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
     [self.client addObserver:self
                   forKeyPath:@"connected"
                      options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew
@@ -78,6 +80,7 @@
         
         switch (newState) {
             case CONNECTED:
+                [self loadButtonViewController];
                 [self.connectButton setTitle:@"Disconnect" forState:UIControlStateNormal];
                 break;
                 
@@ -94,6 +97,13 @@
         }
         
     }
+}
+
+#pragma mark - View Controller Transition
+
+- (void)loadButtonViewController
+{
+    [self performSegueWithIdentifier:@"loadButton" sender:self];
 }
 
 @end

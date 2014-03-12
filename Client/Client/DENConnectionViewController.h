@@ -7,7 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "DENClient.h"
 
-@interface DENViewController : UIViewController
+@interface DENConnectionViewController : UIViewController
+
+@property (nonatomic, strong) DENClient *client;
 
 @end
