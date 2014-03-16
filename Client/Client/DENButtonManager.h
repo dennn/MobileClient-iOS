@@ -8,10 +8,16 @@
 
 #import <Foundation/Foundation.h>
 
+typedef NS_ENUM(NSInteger, Button_State) {
+    RELEASED = 0,
+    PRESSED = 1
+};
+
 @interface DENButtonManager : NSObject <UICollectionViewDataSource>
 
 @property (nonatomic, weak) UICollectionView *collectionView;
 
 - (void)processGameData:(NSDictionary *)buttonData;
+- (NSDictionary *)getButtonDataForID:(NSInteger)ID;
 
 @end
