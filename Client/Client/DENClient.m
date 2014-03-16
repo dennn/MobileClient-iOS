@@ -201,15 +201,15 @@ NS_ENUM(NSInteger, serverRequests) {
     NSError *error;
 
     for (NSInteger i=0; i < [sensors count]; i++) {
-        NSNumber *sensorValue = (NSNumber *)[sensors objectAtIndex:i];
-        SensorType sensor = [DENSensors getSensorForID:[sensorValue integerValue]];
+        NSInteger sensorValue = [[sensors objectAtIndex:i] integerValue];
+        SensorType sensor = [DENSensors getSensorForID:sensorValue];
         NSDictionary *sensorData;
         if (sensor == BUTTONS) {
             sensorData = [self.buttonManager getButtonDataForID:sensor];
         } else {
             sensorData = [self.sensorManager getSensorDataForSensor:sensor];
         }
-        [deviceDictionary setObject:sensorData forKey:[NSString stringWithFormat:@"%li", (long)[sensorValue integerValue]]];
+        [deviceDictionary setObject:sensorData forKey:[NSString stringWithFormat:@"%li", (long)sensorValue]];
     }
     
     response = @{@"Devices": deviceDictionary};
