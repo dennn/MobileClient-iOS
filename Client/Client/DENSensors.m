@@ -107,10 +107,10 @@
             return NULL_DEVICE;
             
         case 1:
-            return ACCELEROMETER;
+            return GYROSCOPE;
             
         case 2:
-            return GYROSCOPE;
+            return ACCELEROMETER;
             
         default:
             return NO_DEVICE;
