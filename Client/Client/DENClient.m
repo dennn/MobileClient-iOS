@@ -40,12 +40,12 @@ NS_ENUM(NSInteger, serverRequests) {
 #pragma mark - Initialization
 
 + (id)sharedManager {
-    static DENClient *sharedMyManager = nil;
+    static DENClient *staticInstance = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        sharedMyManager = [[self alloc] init];
+        staticInstance = [[self alloc] init];
     });
-    return sharedMyManager;
+    return staticInstance;
 }
 
 - (instancetype)init
@@ -205,9 +205,9 @@ NS_ENUM(NSInteger, serverRequests) {
         SensorType sensor = [DENSensors getSensorForID:sensorValue];
         NSDictionary *sensorData;
         if (sensor == BUTTONS) {
-            sensorData = [self.buttonManager getButtonDataForID:sensor];
+            sensorData = [self.buttonManager getButtonDataForID:sensorValue];
         } else {
-            sensorData = [self.sensorManager getSensorDataForSensor:sensor];
+            sensorData = [self.sensorManager getSensorDataForSensor:sensorValue];
         }
         [deviceDictionary setObject:sensorData forKey:[NSString stringWithFormat:@"%li", (long)sensorValue]];
     }
