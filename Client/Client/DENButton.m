@@ -14,8 +14,8 @@
 {
     if (self = [super init]) {
         _title = [data objectForKey:@"Title"];
-        _x = [[data objectForKey:@"x"] integerValue];
-        _y = [[data objectForKey:@"y"] integerValue];
+        _x = [[data objectForKey:@"X"] integerValue];
+        _y = [[data objectForKey:@"Y"] integerValue];
         _ID = ID;
     }
     
