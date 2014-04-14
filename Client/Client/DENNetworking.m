@@ -89,11 +89,11 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 - (void)netServiceBrowser:(NSNetServiceBrowser *)aNetServiceBrowser didFindService:(NSNetService *)aNetService moreComing:(BOOL)moreComing
 {
     NSLog(@"Found service %@, resolving..., more coming: %d", aNetService.name, moreComing);
-    if ([aNetService.name isEqualToString:@"GPServer (deniss-mbp)"] || [aNetService.name isEqualToString:@"GPServer (Deniss-MacBook-Pro.local)"]) {
+  //  if ([aNetService.name isEqualToString:@"GPServer (deniss-mbp)"] || [aNetService.name isEqualToString:@"GPServer (Deniss-MacBook-Pro.local)"]) {
         self.serviceResolver = aNetService;
         self.serviceResolver.delegate = self;
         [self.serviceResolver resolveWithTimeout:5.0];
-    }
+  //  }
 }
 
 #pragma mark - NSNetServiceDelegate

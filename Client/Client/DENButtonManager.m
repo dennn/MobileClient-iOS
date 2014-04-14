@@ -56,7 +56,7 @@
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {
-    return [self.buttons count];
+    return 6;
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
@@ -65,8 +65,8 @@
     DENButton *button = [self.buttons objectForKey:indexPath];
     [cell.cellButton setTitle:button.title forState:UIControlStateNormal];
     [cell.cellButton setTag:button.ID];
-    [cell.cellButton addTarget:self action:@selector(buttonPressed:) forControlEvents:UIControlEventTouchUpInside];
-    [cell.cellButton addTarget:self action:@selector(buttonReleased:) forControlEvents:UIControlEventTouchUpOutside];
+    [cell.cellButton addTarget:self action:@selector(buttonPressed:) forControlEvents:UIControlEventTouchDown];
+    [cell.cellButton addTarget:self action:@selector(buttonReleased:) forControlEvents:UIControlEventTouchUpInside];
     [cell setImagesForIndexPath:indexPath];
     
     return cell;
@@ -88,7 +88,7 @@
 
 - (NSDictionary *)getButtonDataForID:(NSInteger)ID
 {
-    NSDictionary *stateDictionary = @{@"State" : [self.pressedButtons objectForKey:[NSNumber numberWithInteger:ID]]};
+    NSDictionary *stateDictionary = @{@"Status" : [self.pressedButtons objectForKey:[NSNumber numberWithInteger:ID]]};
     
     return stateDictionary;
 }
