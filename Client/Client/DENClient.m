@@ -46,12 +46,15 @@ NS_ENUM(NSInteger, serverRequests) {
 
 #pragma mark - Initialization
 
-+ (id)sharedManager {
++ (instancetype)sharedManager {
     static DENClient *staticInstance = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        staticInstance = [[self alloc] init];
-    });
+    if (!staticInstance) {
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            staticInstance = [[DENClient alloc] init];
+        });
+    }
+    
     return staticInstance;
 }
 
@@ -72,6 +75,7 @@ NS_ENUM(NSInteger, serverRequests) {
 
         _buttonManager = [DENButtonManager new];
         _mediaManager = [DENMediaManager new];
+        _mediaManager.client = self;
     }
     
     return self;
@@ -187,7 +191,7 @@ NS_ENUM(NSInteger, serverRequests) {
     }
 }
 
-- (void)startDownloadingFile:(NSString *)fileName
+- (void)startDownloadingFile:(NSString *)fileName withSize:(NSUInteger)size
 {
     self.networkManager.downloadingFiles = YES;
     
@@ -198,13 +202,14 @@ NS_ENUM(NSInteger, serverRequests) {
     if (error) {
         NSLog(@"Error creating JSON while completing game start");
     } else {
-        [self.networkManager writeData:data];
+        [self.networkManager startDownloadingFile:data ofSize:size];
     }
 }
 
 - (void)completedDownloadingMedia
 {
     self.networkManager.downloadingFiles = NO;
+    [self.networkManager restartListening];
     [self completeGameStart];
 }
 

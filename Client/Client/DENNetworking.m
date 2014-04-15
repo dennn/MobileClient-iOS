@@ -11,6 +11,8 @@
 #import "NSMutableArray+Queue.h"
 #import <GCDAsyncSocket.h>
 
+#define FileDownloadTag 63
+
 static NSString * const kBonjourService = @"_gpserver._tcp.";
 
 @interface DENNetworking () 
@@ -121,6 +123,8 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 - (void)connectWithHost:(NSString *)host andPort:(uint16_t)port {}
 - (void)disconnect {}
 - (void)writeData:(NSData *)data {}
+- (void)restartListening {}
+- (void)startDownloadingFile:(NSData *)file ofSize:(NSUInteger)size {}
 
 @end
 
@@ -323,11 +327,22 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
     [self.socket writeData:data withTimeout:-1 tag:1];
 }
 
+- (void)startDownloadingFile:(NSData *)file ofSize:(NSUInteger)size
+{
+    NSDictionary *JSONOutput = [NSJSONSerialization JSONObjectWithData:file options:NSJSONReadingAllowFragments error:nil];
+    NSLog(@"%@", JSONOutput);
+    [self.socket writeData:file withTimeout:-1 tag:FileDownloadTag];
+
+    [self.socket readDataToData:[GCDAsyncSocket CRLFData] withTimeout:-1 tag:FileDownloadTag];
+}
+
 - (void)socket:(GCDAsyncSocket *)sock didReadData:(NSData *)data withTag:(long)tag
 {
-    if (self.downloadingFiles == YES) {
+    if (tag == FileDownloadTag) {
         if ([self.delegate respondsToSelector:@selector(didDownloadFile:)]) {
             [self.delegate didDownloadFile:data];
+            NSLog(@"Downloaded file of size %lu", (unsigned long)[data length]);
+            NSLog(@"%@", [data description]);
         }
     } else {
         NSError *error;
@@ -341,8 +356,14 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
                 [self.delegate didReadServerRequest:[requestType integerValue] withData:JSONOutput];
             }
         }
+        [self.socket readDataToData:[GCDAsyncSocket LFData] withTimeout:-1 tag:2];
     }
-    [self.socket readDataToData:[GCDAsyncSocket LFData] withTimeout:-1 tag:2];
+}
+
+- (void)restartListening
+{
+    NSLog(@"Restarting listening");
+  //  [self.socket readDataToData:[GCDAsyncSocket LFData] withTimeout:-1 tag:2];
 }
 
 

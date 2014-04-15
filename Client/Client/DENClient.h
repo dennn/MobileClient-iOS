@@ -28,7 +28,7 @@ typedef NS_ENUM(NSInteger, Error) {
 
 // Media Downloading
 - (void)completedDownloadingMedia;
-- (void)startDownloadingFile:(NSString *)fileName;
+- (void)startDownloadingFile:(NSString *)fileName withSize:(NSUInteger)size;
 
 + (NSData *)createErrorMessageForCode:(Error)errorCode;
 

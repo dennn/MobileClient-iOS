@@ -8,9 +8,13 @@
 
 #import <Foundation/Foundation.h>
 
+@class DENClient;
+
 @interface DENMediaManager : NSObject
 
 - (void)processMediaData:(NSArray *)media;
 - (void)downloadedFile:(NSData *)data;
+
+@property (nonatomic, weak) DENClient *client;
 
 @end

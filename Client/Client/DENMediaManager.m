@@ -17,7 +17,7 @@ typedef NS_ENUM(NSInteger, Media_Type) {
 @interface DENMediaItem : NSObject
 
 @property (nonatomic, strong) NSString *name;
-@property (nonatomic, assign) NSInteger size;
+@property (nonatomic, assign) NSUInteger size;
 @property (nonatomic, assign) Media_Type type;
 
 @end
@@ -28,7 +28,6 @@ typedef NS_ENUM(NSInteger, Media_Type) {
 
 @interface DENMediaManager ()
 
-@property (nonatomic, strong) DENClient *client;
 @property (nonatomic, strong) NSMutableDictionary *files;
 @property (nonatomic, strong) NSMutableArray *filesToDownload;
 @property (nonatomic, strong) DENMediaItem *currentDownloadedItem;
@@ -40,7 +39,6 @@ typedef NS_ENUM(NSInteger, Media_Type) {
 - (instancetype)init
 {
     if (self = [super init]) {
-        _client = [DENClient sharedManager];
         _files = [NSMutableDictionary new];
         _filesToDownload = [NSMutableArray new];
     }
@@ -49,7 +47,7 @@ typedef NS_ENUM(NSInteger, Media_Type) {
 
 - (void)processMediaData:(NSArray *)media
 {
-    
+
     for (NSDictionary *mediaItem in media) {
         NSString *itemName = mediaItem[@"Name"];
         NSNumber *itemSize = mediaItem[@"Size"];
@@ -57,7 +55,7 @@ typedef NS_ENUM(NSInteger, Media_Type) {
 
         DENMediaItem *newItem = [DENMediaItem new];
         newItem.name = itemName;
-        newItem.size = [itemSize integerValue];
+        newItem.size = [itemSize unsignedIntegerValue];
         newItem.type = (Media_Type)[itemType integerValue];
         
         self.files[itemName] = newItem;
@@ -66,7 +64,7 @@ typedef NS_ENUM(NSInteger, Media_Type) {
             [self.filesToDownload addObject:newItem];
         }
     }
-    
+        
     [self startDownloadingItems];
 }
 
@@ -83,14 +81,14 @@ typedef NS_ENUM(NSInteger, Media_Type) {
 {
     [DENMediaManager writeData:data withFileName:self.currentDownloadedItem.name];
     
+    [self.filesToDownload removeObjectAtIndex:0];
     [self startDownloadingItems];
 }
 
 - (void)downloadNextItem:(DENMediaItem *)item
 {
     self.currentDownloadedItem = item;
-    [self.filesToDownload removeObjectAtIndex:0];
-    [self.client startDownloadingFile:self.currentDownloadedItem.name];
+    [self.client startDownloadingFile:self.currentDownloadedItem.name withSize:self.currentDownloadedItem.size];
 }
 
 #pragma mark - File Downloading
@@ -128,7 +126,6 @@ typedef NS_ENUM(NSInteger, Media_Type) {
     
     NSString *filePath = [DENMediaManager getFilePathForFile:fileName];
     
-    // Save in PNG format as JPEG is lossy
     [file writeToFile:filePath atomically:YES];
     
     // Make sure we don't back this up to iCloud

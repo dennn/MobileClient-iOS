@@ -38,6 +38,8 @@ typedef NS_ENUM(NSInteger, ConnectionState) {
 - (void)searchForServices;
 
 - (void)writeData:(NSData *)data;
+- (void)restartListening;
+- (void)startDownloadingFile:(NSData *)file ofSize:(NSUInteger)size;
 
 // Delegate
 @property (nonatomic, weak) id <DENNetworkingProtocol> delegate;
