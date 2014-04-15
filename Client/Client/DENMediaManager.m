@@ -97,7 +97,28 @@ typedef NS_ENUM(NSInteger, Media_Type) {
 
 + (NSString *)getFilePathForFile:(NSString *)fileName
 {
-    NSString *path = [[NSHomeDirectory() stringByAppendingPathComponent:@"Library/Application Support"] stringByAppendingPathComponent:fileName];
+    NSString *appSupportDir = [NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES) lastObject];
+    //If there isn't an App Support Directory yet ...
+    if (![[NSFileManager defaultManager] fileExistsAtPath:appSupportDir isDirectory:NULL]) {
+        NSError *error = nil;
+        //Create one
+        if (![[NSFileManager defaultManager] createDirectoryAtPath:appSupportDir withIntermediateDirectories:YES attributes:nil error:&error]) {
+            NSLog(@"%@", error.localizedDescription);
+        }
+        else {
+            // *** OPTIONAL *** Mark the directory as excluded from iCloud backups
+            NSURL *url = [NSURL fileURLWithPath:appSupportDir];
+            if (![url setResourceValue:@YES
+                                forKey:NSURLIsExcludedFromBackupKey
+                                 error:&error])
+            {
+                NSLog(@"Error excluding %@ from backup %@", [url lastPathComponent], error.localizedDescription);
+            }
+        }
+    }
+    
+    
+    NSString *path = [appSupportDir stringByAppendingPathComponent:fileName];
     
     return path;
 }
@@ -127,6 +148,8 @@ typedef NS_ENUM(NSInteger, Media_Type) {
     NSString *filePath = [DENMediaManager getFilePathForFile:fileName];
     
     [file writeToFile:filePath atomically:YES];
+    
+    NSLog(@"Saving file to %@", filePath);
     
     // Make sure we don't back this up to iCloud
     NSError *error = nil;

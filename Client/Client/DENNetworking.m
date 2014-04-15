@@ -11,8 +11,7 @@
 #import "NSMutableArray+Queue.h"
 #import <GCDAsyncSocket.h>
 
-#define FileDownloadTag 63
-
+static const NSUInteger kFileDownloadTag = 63;
 static NSString * const kBonjourService = @"_gpserver._tcp.";
 
 @interface DENNetworking () 
@@ -323,47 +322,54 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 - (void)writeData:(NSData *)data
 {
     NSDictionary *JSONOutput = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:nil];
-    NSLog(@"%@", JSONOutput);
+    NSLog(@"JSON request: %@", JSONOutput);
     [self.socket writeData:data withTimeout:-1 tag:1];
 }
 
 - (void)startDownloadingFile:(NSData *)file ofSize:(NSUInteger)size
 {
     NSDictionary *JSONOutput = [NSJSONSerialization JSONObjectWithData:file options:NSJSONReadingAllowFragments error:nil];
-    NSLog(@"%@", JSONOutput);
-    [self.socket writeData:file withTimeout:-1 tag:FileDownloadTag];
+    NSLog(@"Downloading file: %@", JSONOutput);
+    [self.socket writeData:file withTimeout:-1 tag:kFileDownloadTag];
 
-    [self.socket readDataToData:[GCDAsyncSocket CRLFData] withTimeout:-1 tag:FileDownloadTag];
+    [self.socket readDataToLength:size withTimeout:-1 tag:kFileDownloadTag];
+}
+
+- (void)socket:(GCDAsyncSocket *)sock didWriteDataWithTag:(long)tag
+{
+    NSLog(@"Sending a packet, tag: %lu", tag);
 }
 
 - (void)socket:(GCDAsyncSocket *)sock didReadData:(NSData *)data withTag:(long)tag
 {
-    if (tag == FileDownloadTag) {
+    NSLog(@"Received a packet, tag: %lu size: %lu", tag, [data length]);
+    if (tag == kFileDownloadTag && self.downloadingFiles) {
         if ([self.delegate respondsToSelector:@selector(didDownloadFile:)]) {
-            [self.delegate didDownloadFile:data];
             NSLog(@"Downloaded file of size %lu", (unsigned long)[data length]);
-            NSLog(@"%@", [data description]);
+            [self.delegate didDownloadFile:data];
         }
-    } else {
+    } else if (self.downloadingFiles == NO) {
         NSError *error;
         NSDictionary *JSONOutput = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:&error];
         if (error) {
             [self writeData:[DENClient createErrorMessageForCode:DESERIALIZATION_ERROR]];
         } else {
-            NSNumber *requestType = [JSONOutput objectForKey:@"Request_type"];
+            NSInteger requestType = [[JSONOutput objectForKey:@"Request_type"] integerValue];
             NSLog(@"%@", JSONOutput);
             if ([self.delegate respondsToSelector:@selector(didReadServerRequest:withData:)]) {
-                [self.delegate didReadServerRequest:[requestType integerValue] withData:JSONOutput];
+                [self.delegate didReadServerRequest:requestType withData:JSONOutput];
+            }
+            if (requestType != GAME_START) {
+                [self.socket readDataToData:[GCDAsyncSocket LFData] withTimeout:-1 tag:2];
             }
         }
-        [self.socket readDataToData:[GCDAsyncSocket LFData] withTimeout:-1 tag:2];
     }
 }
 
 - (void)restartListening
 {
     NSLog(@"Restarting listening");
-  //  [self.socket readDataToData:[GCDAsyncSocket LFData] withTimeout:-1 tag:2];
+    [self.socket readDataToData:[GCDAsyncSocket LFData] withTimeout:-1 tag:2];
 }
 
 

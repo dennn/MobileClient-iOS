@@ -15,6 +15,8 @@
 - (void)processMediaData:(NSArray *)media;
 - (void)downloadedFile:(NSData *)data;
 
++ (UIImage *)getImageWithFileName:(NSString *)fileName;
+
 @property (nonatomic, weak) DENClient *client;
 
 @end

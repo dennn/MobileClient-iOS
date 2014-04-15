@@ -8,6 +8,7 @@
 
 #import "DENButtonViewController.h"
 #import "DENConnectionViewController.h"
+#import "DENMediaManager.h"
 
 @interface DENButtonViewController ()
 
@@ -29,6 +30,7 @@
     [super viewDidLoad];
 	// Do any additional setup after loading the view.
     self.client = [DENClient sharedManager];
+    self.client.delegate = self;
     self.collectionView.dataSource = self.client.buttonManager;
     self.client.buttonManager.collectionView = self.collectionView;
 }
@@ -66,6 +68,17 @@
 - (void)loadConnectionViewController
 {
     [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+#pragma mark - DENClientProtocol
+
+- (void)shouldSetBackground:(NSString *)background
+{
+    UIImage *backgroundImage = [DENMediaManager getImageWithFileName:background];
+    
+    if (backgroundImage) {
+        self.collectionView.backgroundView = [[UIImageView alloc] initWithImage:backgroundImage];
+    }
 }
 
 @end

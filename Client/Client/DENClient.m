@@ -14,19 +14,6 @@
 @import CoreMotion;
 @import AudioToolbox;
 
-NS_ENUM(NSInteger, serverRequests) {
-    NULL_REQUEST,
-    HANDSHAKE,
-    GAME_DATA,
-    GAME_START,
-    GAME_END,
-    DISCONNECT,
-    XBMC_START,
-    XBMC_END,
-    XBMC_REQUEST,
-    PULSE
-};
-
 @interface DENClient () <DENNetworkingProtocol>
 
 // Socket details
@@ -137,6 +124,9 @@ NS_ENUM(NSInteger, serverRequests) {
                 [self.networkManager writeData:[DENClient createErrorMessageForCode:DATA_BEFORE_HANDSHAKE]];
             } else {
                 [self sendGameDataForSensors:[JSONData objectForKey:@"Devices"]];
+                if ([self.delegate respondsToSelector:@selector(shouldSetBackground:)]) {
+                    [self.delegate shouldSetBackground:[JSONData objectForKey:@"SetBackground"]];
+                }
                 [DENClient vibratePhoneForDuration:[[JSONData objectForKey:@"Vibrate"] integerValue]];
             }
             break;
