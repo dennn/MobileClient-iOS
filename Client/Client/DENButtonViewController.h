@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "DENClient.h"
 
-@interface DENButtonViewController : UICollectionViewController
+@interface DENButtonViewController : UICollectionViewController <DENClientProtocol>
 
 @property (nonatomic, strong) DENClient *client;
 

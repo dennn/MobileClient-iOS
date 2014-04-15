@@ -19,12 +19,38 @@ typedef NS_ENUM(NSInteger, Error) {
     DEVICE_UNAVAILABLE = 106
 };
 
+NS_ENUM(NSInteger, serverRequests) {
+    NULL_REQUEST,
+    HANDSHAKE,
+    GAME_DATA,
+    GAME_START,
+    GAME_END,
+    DISCONNECT,
+    XBMC_START,
+    XBMC_END,
+    XBMC_REQUEST,
+    PULSE
+};
+
+@protocol DENClientProtocol <NSObject>
+
+- (void)shouldSetBackground:(NSString *)background;
+
+@optional
+- (void)shouldPlayMusic;
+
+@end
+
 @interface DENClient : NSObject
 
-//Connection methods
+// Connection methods
 - (void)connect;
 - (void)connectWithHost:(NSString *)host andPort:(uint16_t)port;
 - (void)disconnect;
+
+// Media Downloading
+- (void)completedDownloadingMedia;
+- (void)startDownloadingFile:(NSString *)fileName withSize:(NSUInteger)size;
 
 + (NSData *)createErrorMessageForCode:(Error)errorCode;
 
@@ -32,5 +58,8 @@ typedef NS_ENUM(NSInteger, Error) {
 
 @property (nonatomic, assign) ConnectionState connected;
 @property (nonatomic, strong) DENButtonManager *buttonManager;
+
+@property (nonatomic, weak) id <DENClientProtocol> delegate;
+
 
 @end

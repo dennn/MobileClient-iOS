@@ -22,6 +22,7 @@ typedef NS_ENUM(NSInteger, ConnectionState) {
 @protocol DENNetworkingProtocol <NSObject>
 
 - (void)didReadServerRequest:(NSInteger)requestType withData:(NSDictionary *)JSONData;
+- (void)didDownloadFile:(NSData *)file;
 - (void)willDisconnect;
 - (void)didConnect;
 
@@ -37,8 +38,12 @@ typedef NS_ENUM(NSInteger, ConnectionState) {
 - (void)searchForServices;
 
 - (void)writeData:(NSData *)data;
+- (void)restartListening;
+- (void)startDownloadingFile:(NSData *)file ofSize:(NSUInteger)size;
 
 // Delegate
 @property (nonatomic, weak) id <DENNetworkingProtocol> delegate;
+
+@property (nonatomic, assign) BOOL downloadingFiles;
 
 @end
