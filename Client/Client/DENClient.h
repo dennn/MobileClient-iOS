@@ -21,10 +21,14 @@ typedef NS_ENUM(NSInteger, Error) {
 
 @interface DENClient : NSObject
 
-//Connection methods
+// Connection methods
 - (void)connect;
 - (void)connectWithHost:(NSString *)host andPort:(uint16_t)port;
 - (void)disconnect;
+
+// Media Downloading
+- (void)completedDownloadingMedia;
+- (void)startDownloadingFile:(NSString *)fileName;
 
 + (NSData *)createErrorMessageForCode:(Error)errorCode;
 

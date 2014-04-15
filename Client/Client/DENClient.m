@@ -9,6 +9,7 @@
 #import "DENClient.h"
 #import "DENSensors.h"
 #import "DENButtonManager.h"
+#import "DENMediaManager.h"
 
 @import CoreMotion;
 @import AudioToolbox;
@@ -19,7 +20,11 @@ NS_ENUM(NSInteger, serverRequests) {
     GAME_DATA,
     GAME_START,
     GAME_END,
-    DISCONNECT
+    DISCONNECT,
+    XBMC_START,
+    XBMC_END,
+    XBMC_REQUEST,
+    PULSE
 };
 
 @interface DENClient () <DENNetworkingProtocol>
@@ -27,8 +32,10 @@ NS_ENUM(NSInteger, serverRequests) {
 // Socket details
 @property (nonatomic, strong) DENSensors *sensorManager;
 @property (nonatomic, strong) NSString *username;
-//Networking
+// Networking
 @property (nonatomic, strong) DENNetworking *networkManager;
+// Media
+@property (nonatomic, strong) DENMediaManager *mediaManager;
 
 // States
 @property BOOL handShaked;
@@ -53,13 +60,18 @@ NS_ENUM(NSInteger, serverRequests) {
     if (self = [super init]) {
         _username = @"Guest_iOS";
         _handShaked = NO;
+
         _sensorManager = [DENSensors new];
+        
         // Specify whether to use raw sockets, or GCDAsyncSocket
         _networkManager = [DENNetworking networkingControllerOfNetworkingType:LibrarySocket];
         _networkManager.delegate = self;
         [_networkManager searchForServices];
+        
         _connected = DISCONNECTED;
+
         _buttonManager = [DENButtonManager new];
+        _mediaManager = [DENMediaManager new];
     }
     
     return self;
@@ -135,7 +147,7 @@ NS_ENUM(NSInteger, serverRequests) {
         case GAME_START:
         {
             [self.buttonManager processGameData:[JSONData objectForKey:@"Buttons"]];
-            [self completeGameStart];
+            [self.mediaManager processMediaData:[JSONData objectForKey:@"Media"]];
             break;
         }
             
@@ -145,11 +157,59 @@ NS_ENUM(NSInteger, serverRequests) {
             break;
         }
             
+        case XBMC_START:
+        {
+            [self completeXBMCStart];
+            break;
+        }
+            
+        case XBMC_END:
+        {
+            [self completeXBMCEnd];
+            break;
+        }
+            
+        case XBMC_REQUEST:
+        {
+            break;
+        }
+            
+        case PULSE:
+        {
+            [self completePulse];
+            break;
+        }
+            
         default:
         {
             [self.networkManager writeData:[DENClient createErrorMessageForCode:INVALID_REQUEST_TYPE]];
         }
     }
+}
+
+- (void)startDownloadingFile:(NSString *)fileName
+{
+    self.networkManager.downloadingFiles = YES;
+    
+    NSDictionary *response = @{@"Name": fileName};
+    NSError *error;
+    NSData *data = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];
+    
+    if (error) {
+        NSLog(@"Error creating JSON while completing game start");
+    } else {
+        [self.networkManager writeData:data];
+    }
+}
+
+- (void)completedDownloadingMedia
+{
+    self.networkManager.downloadingFiles = NO;
+    [self completeGameStart];
+}
+
+- (void)didDownloadFile:(NSData *)file {
+    [self.mediaManager downloadedFile:file];
 }
 
 #pragma mark - Server requests
@@ -217,6 +277,45 @@ NS_ENUM(NSInteger, serverRequests) {
     NSData *data = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];
     if (error) {
         NSLog(@"Error creating JSON while sending data");
+    } else {
+        [self.networkManager writeData:data];
+    }
+}
+
+- (void)completeXBMCStart
+{
+    NSDictionary *response = @{@"Response": @1};
+    NSError *error;
+    NSData *data = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];
+    
+    if (error) {
+        NSLog(@"Error creating JSON while completing game end");
+    } else {
+        [self.networkManager writeData:data];
+    }
+}
+
+- (void)completeXBMCEnd
+{
+    NSDictionary *response = @{@"Response": @1};
+    NSError *error;
+    NSData *data = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];
+    
+    if (error) {
+        NSLog(@"Error creating JSON while completing game end");
+    } else {
+        [self.networkManager writeData:data];
+    }
+}
+
+- (void)completePulse
+{
+    NSDictionary *response = @{@"Response": @1};
+    NSError *error;
+    NSData *data = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];
+    
+    if (error) {
+        NSLog(@"Error creating JSON while completing game end");
     } else {
         [self.networkManager writeData:data];
     }

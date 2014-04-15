@@ -64,6 +64,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
         _serviceResolver = [NSNetService new];
         _serviceResolver.delegate = self;
         _connected = DISCONNECTED;
+        _downloadingFiles = NO;
     }
     
     return self;
@@ -324,18 +325,24 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 
 - (void)socket:(GCDAsyncSocket *)sock didReadData:(NSData *)data withTag:(long)tag
 {
-    NSError *error;
-    NSDictionary *JSONOutput = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:&error];
-    if (error) {
-        [self writeData:[DENClient createErrorMessageForCode:DESERIALIZATION_ERROR]];
-    } else {
-        NSNumber *requestType = [JSONOutput objectForKey:@"Request_type"];
-        NSLog(@"%@", JSONOutput);
-        if ([self.delegate respondsToSelector:@selector(didReadServerRequest:withData:)]) {
-            [self.delegate didReadServerRequest:[requestType integerValue] withData:JSONOutput];
+    if (self.downloadingFiles == YES) {
+        if ([self.delegate respondsToSelector:@selector(didDownloadFile:)]) {
+            [self.delegate didDownloadFile:data];
         }
-        [self.socket readDataToData:[GCDAsyncSocket LFData] withTimeout:-1 tag:2];
+    } else {
+        NSError *error;
+        NSDictionary *JSONOutput = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:&error];
+        if (error) {
+            [self writeData:[DENClient createErrorMessageForCode:DESERIALIZATION_ERROR]];
+        } else {
+            NSNumber *requestType = [JSONOutput objectForKey:@"Request_type"];
+            NSLog(@"%@", JSONOutput);
+            if ([self.delegate respondsToSelector:@selector(didReadServerRequest:withData:)]) {
+                [self.delegate didReadServerRequest:[requestType integerValue] withData:JSONOutput];
+            }
+        }
     }
+    [self.socket readDataToData:[GCDAsyncSocket LFData] withTimeout:-1 tag:2];
 }
 
 

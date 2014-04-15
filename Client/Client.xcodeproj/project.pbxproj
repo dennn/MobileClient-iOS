@@ -13,6 +13,7 @@
 		A22CA57918D068BA00426B7A /* DENButtonCell.m in Sources */ = {isa = PBXBuildFile; fileRef = A22CA57818D068BA00426B7A /* DENButtonCell.m */; };
 		A22CA57C18D06A8C00426B7A /* DENButtonFlowLayout.m in Sources */ = {isa = PBXBuildFile; fileRef = A22CA57B18D06A8C00426B7A /* DENButtonFlowLayout.m */; };
 		A22CA57F18D0717700426B7A /* DENButton.m in Sources */ = {isa = PBXBuildFile; fileRef = A22CA57E18D0717700426B7A /* DENButton.m */; };
+		A237D90618FC3758008EC9EC /* DENMediaManager.m in Sources */ = {isa = PBXBuildFile; fileRef = A237D90518FC3758008EC9EC /* DENMediaManager.m */; };
 		A23BFC6F18BF76CE00E8B6A7 /* Podfile in Resources */ = {isa = PBXBuildFile; fileRef = A23BFC6E18BF76CE00E8B6A7 /* Podfile */; };
 		A2721F0A186CCC5200CE2513 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A2721F09186CCC5200CE2513 /* Foundation.framework */; };
 		A2721F0C186CCC5200CE2513 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A2721F0B186CCC5200CE2513 /* CoreGraphics.framework */; };
@@ -57,6 +58,8 @@
 		A22CA57B18D06A8C00426B7A /* DENButtonFlowLayout.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DENButtonFlowLayout.m; sourceTree = "<group>"; };
 		A22CA57D18D0717700426B7A /* DENButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DENButton.h; sourceTree = "<group>"; };
 		A22CA57E18D0717700426B7A /* DENButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DENButton.m; sourceTree = "<group>"; };
+		A237D90418FC3758008EC9EC /* DENMediaManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DENMediaManager.h; sourceTree = "<group>"; };
+		A237D90518FC3758008EC9EC /* DENMediaManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DENMediaManager.m; sourceTree = "<group>"; };
 		A23BFC6E18BF76CE00E8B6A7 /* Podfile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Podfile; sourceTree = SOURCE_ROOT; };
 		A2721F06186CCC5200CE2513 /* Client.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Client.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2721F09186CCC5200CE2513 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -134,6 +137,8 @@
 				A2AC3857186E0D78006751A9 /* DENSensors.m */,
 				A22CA57318D0669500426B7A /* DENButtonManager.h */,
 				A22CA57418D0669500426B7A /* DENButtonManager.m */,
+				A237D90418FC3758008EC9EC /* DENMediaManager.h */,
+				A237D90518FC3758008EC9EC /* DENMediaManager.m */,
 				A22CA57D18D0717700426B7A /* DENButton.h */,
 				A22CA57E18D0717700426B7A /* DENButton.m */,
 			);
@@ -373,6 +378,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A22CA57C18D06A8C00426B7A /* DENButtonFlowLayout.m in Sources */,
+				A237D90618FC3758008EC9EC /* DENMediaManager.m in Sources */,
 				A22CA57518D0669500426B7A /* DENButtonManager.m in Sources */,
 				A22CA57918D068BA00426B7A /* DENButtonCell.m in Sources */,
 				A2906E71186CD21A00B02D43 /* DENClient.m in Sources */,
