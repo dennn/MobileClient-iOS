@@ -22,9 +22,9 @@
     return self;
 }
 
-- (NSIndexPath *)indexPathForRows:(NSInteger)rows
+- (NSIndexPath *)indexPathForColumns:(NSInteger)columns
 {
-    return [NSIndexPath indexPathForItem:((self.y * rows) + self.x) inSection:0];
+    return [NSIndexPath indexPathForItem:((self.y * columns) + self.x) inSection:0];
 }
 
 - (NSNumber *)getIDAsNumber;

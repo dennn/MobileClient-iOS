@@ -11,7 +11,7 @@
 @interface DENButton : NSObject
 
 - (instancetype)initWithDictionary:(NSDictionary *)data andID:(NSInteger)ID;
-- (NSIndexPath *)indexPathForRows:(NSInteger)rows;
+- (NSIndexPath *)indexPathForColumns:(NSInteger)columns;
 - (NSNumber *)getIDAsNumber;
 
 @property (nonatomic, strong) NSString *title;

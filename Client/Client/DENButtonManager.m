@@ -8,6 +8,7 @@
 
 #import "DENButtonManager.h"
 #import "DENButtonCell.h"
+#import "DENFakeButtonCell.h"
 #import "DENButton.h"
 
 @interface DENButtonManager ()
@@ -39,7 +40,7 @@
         } else {
             NSNumber *buttonID = [NSNumber numberWithInteger:[key integerValue]];
             DENButton *newButton = [[DENButton alloc] initWithDictionary:obj andID:[buttonID integerValue]];
-            [self.buttons setObject:newButton forKey:[newButton indexPathForRows:self.rows]];
+            [self.buttons setObject:newButton forKey:[newButton indexPathForColumns:self.columns]];
             [self.pressedButtons setObject:[NSNumber numberWithInteger:RELEASED] forKey:buttonID];
         }
     }];
@@ -56,20 +57,25 @@
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {
-    return 6;
+    return (self.columns * self.rows);
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    DENButtonCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"BUTTON_CELL" forIndexPath:indexPath];
     DENButton *button = [self.buttons objectForKey:indexPath];
-    [cell.cellButton setTitle:button.title forState:UIControlStateNormal];
-    [cell.cellButton setTag:button.ID];
-    [cell.cellButton addTarget:self action:@selector(buttonPressed:) forControlEvents:UIControlEventTouchDown];
-    [cell.cellButton addTarget:self action:@selector(buttonReleased:) forControlEvents:UIControlEventTouchUpInside];
-    [cell setImagesForIndexPath:indexPath];
+    if (button) {
+        DENButtonCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"BUTTON_CELL" forIndexPath:indexPath];
+        [cell.cellButton setTitle:button.title forState:UIControlStateNormal];
+        [cell.cellButton setTag:button.ID];
+        [cell.cellButton addTarget:self action:@selector(buttonPressed:) forControlEvents:UIControlEventTouchDown];
+        [cell.cellButton addTarget:self action:@selector(buttonReleased:) forControlEvents:UIControlEventTouchUpInside];
+        [cell setImagesForIndexPath:indexPath];
     
-    return cell;
+        return cell;
+    } else {
+        DENFakeButtonCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"FAKE_BUTTON_CELL" forIndexPath:indexPath];
+        return cell;
+    }
 }
 
 #pragma mark - Button Sending

@@ -15,6 +15,7 @@
 		A22CA57F18D0717700426B7A /* DENButton.m in Sources */ = {isa = PBXBuildFile; fileRef = A22CA57E18D0717700426B7A /* DENButton.m */; };
 		A237D90618FC3758008EC9EC /* DENMediaManager.m in Sources */ = {isa = PBXBuildFile; fileRef = A237D90518FC3758008EC9EC /* DENMediaManager.m */; };
 		A237D90C18FF23BD008EC9EC /* DENNoWifiViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A237D90B18FF23BD008EC9EC /* DENNoWifiViewController.m */; };
+		A237D91218FF3519008EC9EC /* DENFakeButtonCell.m in Sources */ = {isa = PBXBuildFile; fileRef = A237D91118FF3519008EC9EC /* DENFakeButtonCell.m */; };
 		A23BFC6F18BF76CE00E8B6A7 /* Podfile in Resources */ = {isa = PBXBuildFile; fileRef = A23BFC6E18BF76CE00E8B6A7 /* Podfile */; };
 		A2721F14186CCC5200CE2513 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = A2721F12186CCC5200CE2513 /* InfoPlist.strings */; };
 		A2721F16186CCC5200CE2513 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A2721F15186CCC5200CE2513 /* main.m */; };
@@ -60,6 +61,8 @@
 		A237D90518FC3758008EC9EC /* DENMediaManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DENMediaManager.m; sourceTree = "<group>"; };
 		A237D90A18FF23BD008EC9EC /* DENNoWifiViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DENNoWifiViewController.h; sourceTree = "<group>"; };
 		A237D90B18FF23BD008EC9EC /* DENNoWifiViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DENNoWifiViewController.m; sourceTree = "<group>"; };
+		A237D91018FF3519008EC9EC /* DENFakeButtonCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DENFakeButtonCell.h; sourceTree = "<group>"; };
+		A237D91118FF3519008EC9EC /* DENFakeButtonCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DENFakeButtonCell.m; sourceTree = "<group>"; };
 		A23BFC6E18BF76CE00E8B6A7 /* Podfile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Podfile; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		A2721F06186CCC5200CE2513 /* Client.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Client.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2721F09186CCC5200CE2513 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -158,6 +161,8 @@
 			children = (
 				A22CA57718D068BA00426B7A /* DENButtonCell.h */,
 				A22CA57818D068BA00426B7A /* DENButtonCell.m */,
+				A237D91018FF3519008EC9EC /* DENFakeButtonCell.h */,
+				A237D91118FF3519008EC9EC /* DENFakeButtonCell.m */,
 				A22CA57A18D06A8C00426B7A /* DENButtonFlowLayout.h */,
 				A22CA57B18D06A8C00426B7A /* DENButtonFlowLayout.m */,
 			);
@@ -378,6 +383,7 @@
 			files = (
 				A22CA57C18D06A8C00426B7A /* DENButtonFlowLayout.m in Sources */,
 				A237D90618FC3758008EC9EC /* DENMediaManager.m in Sources */,
+				A237D91218FF3519008EC9EC /* DENFakeButtonCell.m in Sources */,
 				A22CA57518D0669500426B7A /* DENButtonManager.m in Sources */,
 				A22CA57918D068BA00426B7A /* DENButtonCell.m in Sources */,
 				A237D90C18FF23BD008EC9EC /* DENNoWifiViewController.m in Sources */,
