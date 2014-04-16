@@ -13,8 +13,12 @@
 #import "NSMutableArray+Queue.h"
 #import "DENButtonViewController.h"
 
-@import CoreMotion;
+#import <TargetConditionals.h>
+
+@import SystemConfiguration.CaptiveNetwork;
 @import AudioToolbox;
+
+static NSString * const kSSIDName = @"dd-wrt";
 
 @interface DENClient () <DENNetworkingProtocol>
 
@@ -122,6 +126,32 @@
     if ([self.delegate respondsToSelector:@selector(didFailToConnect)]) {
         [self.delegate didFailToConnect];
     }
+}
+
++ (BOOL)isOnCorrectWiFi
+{
+    // Does not work on the simulator.
+    NSString *ssid = nil;
+    NSArray *ifs = (__bridge_transfer id)CNCopySupportedInterfaces();
+    for (NSString *ifnam in ifs) {
+        NSDictionary *info = (__bridge_transfer id)CNCopyCurrentNetworkInfo((__bridge CFStringRef)ifnam);
+        if (info[@"SSID"]) {
+            ssid = info[@"SSID"];
+        }
+    }
+        
+    // We can't get the SSID using Simulator
+    
+#if TARGET_IPHONE_SIMULATOR
+    return YES;
+#else
+    if ([ssid isEqualToString:kSSIDName]) {
+        return YES;
+    } else {
+        return NO;
+    }
+#endif
+    
 }
 
 #pragma mark - Server event handling
@@ -451,6 +481,5 @@
         AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
     }
 }
-
 
 @end

@@ -11,10 +11,6 @@
 
 @interface DENConnectionViewController () <DENClientProtocol, UIAlertViewDelegate>
 
-@property (nonatomic, weak) IBOutlet UIButton *connectButton;
-@property (nonatomic, weak) IBOutlet UITextField *serverIP;
-@property (nonatomic, weak) IBOutlet UITextField *serverPort;
-
 @property (nonatomic, strong) NSMutableArray *services;
 
 @end
@@ -46,8 +42,12 @@
                      options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew
                      context:nil];
     
-    self.client.delegate = self;
-    [self.client searchForServices];
+    if ([DENClient isOnCorrectWiFi] == NO) {
+        [self performSegueWithIdentifier:@"NoWifi" sender:self];
+    } else {
+        self.client.delegate = self;
+        [self.client searchForServices];
+    }
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -64,30 +64,6 @@
     // Dispose of any resources that can be recreated.
 }
 
-- (IBAction)connectToServer:(id)sender
-{
-    switch (self.client.connected) {
-        case CONNECTED:
-            [self.client disconnect];
-            break;
-            
-        case DISCONNECTED:
-            if ([self.serverIP.text length] > 0) {
-                [self.client connectWithHost:self.serverIP.text andPort:8080];
-            } else {
-                [self.client connect];
-            }
-            break;
-            
-        case CONNECTING:
-            [self.client disconnect];
-            break;
-            
-        default:
-            NSLog(@"Unknown connection state");
-    }
-}
-
 #pragma mark - KVO
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
@@ -95,24 +71,9 @@
     if ([keyPath isEqualToString:@"connected"] && [object isKindOfClass:[DENClient class]]) {
         ConnectionState newState = [[change valueForKey:NSKeyValueChangeNewKey] integerValue];
         
-        switch (newState) {
-            case CONNECTED:
-                [self loadButtonViewController];
-                [self.connectButton setTitle:@"Disconnect" forState:UIControlStateNormal];
-                break;
-                
-            case DISCONNECTED:
-                [self.connectButton setTitle:@"Connect" forState:UIControlStateNormal];
-                break;
-                
-            case CONNECTING:
-                [self.connectButton setTitle:@"Connecting..." forState:UIControlStateNormal];
-                break;
-                
-            default:
-                NSLog(@"Unknown connection state");
+        if (newState == CONNECTED) {
+            [self loadButtonViewController];
         }
-        
     }
 }
 

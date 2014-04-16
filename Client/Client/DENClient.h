@@ -68,6 +68,7 @@ NS_ENUM(NSInteger, xbmc) {
 + (NSData *)createErrorMessageForCode:(Error)errorCode;
 
 + (id)sharedManager;
++ (BOOL)isOnCorrectWiFi;
 
 @property (nonatomic, assign) ConnectionState connected;
 @property (nonatomic, strong) DENButtonManager *buttonManager;
