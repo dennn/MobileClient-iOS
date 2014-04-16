@@ -10,18 +10,18 @@
 
 @implementation NSMutableArray (Queue)
 
-- (NSData *)dequeue
+- (NSNumber *)dequeue
 {
     if ([self count] == 0)
         return nil;
     
-    NSData *objectToReturn = [self objectAtIndex:0];
+    NSNumber *objectToReturn = [self objectAtIndex:0];
     [self removeObjectAtIndex:0];
     
     return objectToReturn;
 }
 
-- (void)enqueue:(NSData *)obj
+- (void)enqueue:(NSNumber *)obj
 {
     [self addObject:obj];
 }

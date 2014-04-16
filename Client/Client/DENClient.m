@@ -10,6 +10,8 @@
 #import "DENSensors.h"
 #import "DENButtonManager.h"
 #import "DENMediaManager.h"
+#import "NSMutableArray+Queue.h"
+#import "DENButtonViewController.h"
 
 @import CoreMotion;
 @import AudioToolbox;
@@ -17,12 +19,12 @@
 @interface DENClient () <DENNetworkingProtocol>
 
 // Socket details
-@property (nonatomic, strong) DENSensors *sensorManager;
 @property (nonatomic, strong) NSString *username;
 // Networking
 @property (nonatomic, strong) DENNetworking *networkManager;
-// Media
+// Media and sensors
 @property (nonatomic, strong) DENMediaManager *mediaManager;
+@property (nonatomic, strong) DENSensors *sensorManager;
 
 // States
 @property BOOL handShaked;
@@ -63,6 +65,8 @@
         _buttonManager = [DENButtonManager new];
         _mediaManager = [DENMediaManager new];
         _mediaManager.client = self;
+        
+        _xbmcQueue = [NSMutableArray new];
     }
     
     return self;
@@ -158,18 +162,23 @@
             
         case XBMC_START:
         {
-            [self completeXBMCStart];
+            if (self.buttonViewController) {
+                [self.buttonViewController loadXBMCViewController];
+                [self completeXBMCStart];
+            }
             break;
         }
             
         case XBMC_END:
         {
+            [self.buttonViewController dismissXBMCViewController];
             [self completeXBMCEnd];
             break;
         }
             
         case XBMC_REQUEST:
         {
+            [self sendXBMCRequest];
             break;
         }
             
@@ -311,6 +320,26 @@
 - (void)completePulse
 {
     NSDictionary *response = @{@"Response": @1};
+    NSError *error;
+    NSData *data = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];
+    
+    if (error) {
+        NSLog(@"Error creating JSON while completing game end");
+    } else {
+        [self.networkManager writeData:data];
+    }
+}
+
+- (void)sendXBMCRequest
+{
+    NSDictionary *response;
+    
+    if ([self.xbmcQueue isEmpty] == NO) {
+        response = @{@"Event": [self.xbmcQueue dequeue]};
+    } else {
+        response = @{@"Event": [NSNumber numberWithInteger:NO_EVENT]};
+    }
+    
     NSError *error;
     NSData *data = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];
     

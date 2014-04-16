@@ -13,4 +13,7 @@
 
 @property (nonatomic, strong) DENClient *client;
 
+- (void)loadXBMCViewController;
+- (void)dismissXBMCViewController;
+
 @end

@@ -32,6 +32,15 @@ NS_ENUM(NSInteger, serverRequests) {
     PULSE
 };
 
+NS_ENUM(NSInteger, xbmc) {
+    NO_EVENT,
+    TAP,
+    SWIPE_LEFT,
+    SWIPE_RIGHT,
+    SWIPE_UP,
+    SWIPE_DOWN
+};
+
 @protocol DENClientProtocol <NSObject>
 
 - (void)shouldSetBackground:(NSString *)background;
@@ -39,6 +48,8 @@ NS_ENUM(NSInteger, serverRequests) {
 - (void)shouldVibratePhone:(NSUInteger)duration;
 
 @end
+
+@class DENButtonViewController;
 
 @interface DENClient : NSObject
 
@@ -59,6 +70,8 @@ NS_ENUM(NSInteger, serverRequests) {
 @property (nonatomic, strong) DENButtonManager *buttonManager;
 
 @property (nonatomic, weak) id <DENClientProtocol> delegate;
+@property (nonatomic, strong) NSMutableArray *xbmcQueue;
 
+@property (nonatomic, weak) DENButtonViewController *buttonViewController;
 
 @end

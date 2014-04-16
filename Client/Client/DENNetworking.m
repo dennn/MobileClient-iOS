@@ -328,8 +328,6 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 
 - (void)startDownloadingFile:(NSData *)file ofSize:(NSUInteger)size
 {
-    NSDictionary *JSONOutput = [NSJSONSerialization JSONObjectWithData:file options:NSJSONReadingAllowFragments error:nil];
-    NSLog(@"Downloading file: %@", JSONOutput);
     [self.socket writeData:file withTimeout:-1 tag:kFileDownloadTag];
 
     [self.socket readDataToLength:size withTimeout:-1 tag:kFileDownloadTag];
@@ -337,12 +335,10 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 
 - (void)socket:(GCDAsyncSocket *)sock didWriteDataWithTag:(long)tag
 {
-    NSLog(@"Sending a packet, tag: %lu", tag);
 }
 
 - (void)socket:(GCDAsyncSocket *)sock didReadData:(NSData *)data withTag:(long)tag
 {
-    NSLog(@"Received a packet, tag: %lu size: %lu", tag, [data length]);
     if (tag == kFileDownloadTag && self.downloadingFiles) {
         if ([self.delegate respondsToSelector:@selector(didDownloadFile:)]) {
             NSLog(@"Downloaded file of size %lu", (unsigned long)[data length]);

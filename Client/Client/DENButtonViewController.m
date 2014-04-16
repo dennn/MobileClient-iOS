@@ -9,10 +9,19 @@
 #import "DENButtonViewController.h"
 #import "DENConnectionViewController.h"
 #import "DENMediaManager.h"
+#import "NSMutableArray+Queue.h"
 
 @import AudioToolbox;
 
 @interface DENButtonViewController ()
+
+@property (nonatomic, strong) UITapGestureRecognizer *tapGesture;
+@property (nonatomic, strong) UISwipeGestureRecognizer *swipeGestureLeft;
+@property (nonatomic, strong) UISwipeGestureRecognizer *swipeGestureRight;
+@property (nonatomic, strong) UISwipeGestureRecognizer *swipeGestureUp;
+@property (nonatomic, strong) UISwipeGestureRecognizer *swipeGestureDown;
+
+@property (nonatomic, strong) UIView *gestureView;
 
 @end
 
@@ -33,6 +42,7 @@
 	// Do any additional setup after loading the view.
     self.client = [DENClient sharedManager];
     self.client.delegate = self;
+    self.client.buttonViewController = self;
     self.collectionView.dataSource = self.client.buttonManager;
     self.client.buttonManager.collectionView = self.collectionView;
 }
@@ -70,6 +80,69 @@
 - (void)loadConnectionViewController
 {
     [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)loadXBMCViewController
+{
+    self.gestureView = [[UIView alloc] initWithFrame:self.view.bounds];
+    self.gestureView.backgroundColor = [UIColor whiteColor];
+    
+    // Add tap
+    self.tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
+    self.tapGesture.numberOfTapsRequired = 1;
+    [self.gestureView addGestureRecognizer:self.tapGesture];
+    
+    // Add swipes
+    self.swipeGestureLeft = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(handleSwipeLeft:)];
+    self.swipeGestureLeft.direction = UISwipeGestureRecognizerDirectionLeft;
+    [self.gestureView addGestureRecognizer:self.swipeGestureLeft];
+    
+    self.swipeGestureRight = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(handleSwipeRight:)];
+    self.swipeGestureRight.direction = UISwipeGestureRecognizerDirectionRight;
+    [self.gestureView addGestureRecognizer:self.swipeGestureRight];
+    
+    self.swipeGestureUp = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(handleSwipeUp:)];
+    self.swipeGestureUp.direction = UISwipeGestureRecognizerDirectionUp;
+    [self.gestureView addGestureRecognizer:self.swipeGestureUp];
+    
+    self.swipeGestureDown = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(handleSwipeDown:)];
+    self.swipeGestureDown.direction = UISwipeGestureRecognizerDirectionDown;
+    [self.gestureView addGestureRecognizer:self.swipeGestureDown];
+    
+    [self.view addSubview:self.gestureView];
+    [self.view bringSubviewToFront:self.gestureView];
+}
+
+- (void)dismissXBMCViewController
+{
+    [self.gestureView removeFromSuperview];
+}
+
+#pragma mark - Handle Gestures
+
+- (void)handleTap:(UITapGestureRecognizer *)gesture
+{
+    [self.client.xbmcQueue enqueue:[NSNumber numberWithInteger:TAP]];
+}
+
+- (void)handleSwipeLeft:(UISwipeGestureRecognizer *)gesture
+{
+    [self.client.xbmcQueue enqueue:[NSNumber numberWithInteger:SWIPE_LEFT]];
+}
+
+- (void)handleSwipeRight:(UISwipeGestureRecognizer *)gesture
+{
+    [self.client.xbmcQueue enqueue:[NSNumber numberWithInteger:SWIPE_RIGHT]];
+}
+
+- (void)handleSwipeDown:(UISwipeGestureRecognizer *)gesture
+{
+    [self.client.xbmcQueue enqueue:[NSNumber numberWithInteger:SWIPE_DOWN]];
+}
+
+- (void)handleSwipeUp:(UISwipeGestureRecognizer *)gesture
+{
+    [self.client.xbmcQueue enqueue:[NSNumber numberWithInteger:SWIPE_UP]];
 }
 
 #pragma mark - DENClientProtocol

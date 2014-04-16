@@ -10,8 +10,8 @@
 
 @interface NSMutableArray (Queue)
 
-- (NSData *)dequeue;
-- (void)enqueue:(NSData *)obj;
+- (NSNumber *)dequeue;
+- (void)enqueue:(NSNumber *)obj;
 
 - (BOOL)isEmpty;
 
