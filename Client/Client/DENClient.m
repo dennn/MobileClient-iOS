@@ -124,10 +124,15 @@
                 [self.networkManager writeData:[DENClient createErrorMessageForCode:DATA_BEFORE_HANDSHAKE]];
             } else {
                 [self sendGameDataForSensors:[JSONData objectForKey:@"Devices"]];
+                if ([self.delegate respondsToSelector:@selector(shouldVibratePhone:)]) {
+                    [self.delegate shouldVibratePhone:[[JSONData objectForKey:@"Vibrate"] unsignedIntegerValue]];
+                }
                 if ([self.delegate respondsToSelector:@selector(shouldSetBackground:)]) {
                     [self.delegate shouldSetBackground:[JSONData objectForKey:@"SetBackground"]];
                 }
-                [DENClient vibratePhoneForDuration:[[JSONData objectForKey:@"Vibrate"] integerValue]];
+                if ([self.delegate respondsToSelector:@selector(shouldPlayMusic:)]) {
+                    [self.delegate shouldPlayMusic:[JSONData objectForKey:@"PlaySound"]];
+                }
             }
             break;
         }
@@ -313,16 +318,6 @@
         NSLog(@"Error creating JSON while completing game end");
     } else {
         [self.networkManager writeData:data];
-    }
-}
-
-+ (void)vibratePhoneForDuration:(NSInteger)duration
-{
-    //There's no way to change the duration of a vibration in iOS,
-    //for now we should ignore the milliseconds and just play a single
-    //vibration of duration 0.5s
-    if (duration != 0) {
-        AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
     }
 }
 

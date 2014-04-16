@@ -35,9 +35,8 @@ NS_ENUM(NSInteger, serverRequests) {
 @protocol DENClientProtocol <NSObject>
 
 - (void)shouldSetBackground:(NSString *)background;
-
-@optional
-- (void)shouldPlayMusic;
+- (void)shouldPlayMusic:(NSString *)song;
+- (void)shouldVibratePhone:(NSUInteger)duration;
 
 @end
 
