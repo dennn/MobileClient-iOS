@@ -8,11 +8,6 @@
 
 #import <Foundation/Foundation.h>
 
-typedef NS_ENUM(NSInteger, NetworkingType) {
-    LibrarySocket,
-    NativeSocket
-};
-
 typedef NS_ENUM(NSInteger, ConnectionState) {
     CONNECTED,
     DISCONNECTED,
@@ -29,8 +24,6 @@ typedef NS_ENUM(NSInteger, ConnectionState) {
 @end
 
 @interface DENNetworking : NSObject <NSNetServiceBrowserDelegate, NSNetServiceDelegate>
-
-+ (instancetype)networkingControllerOfNetworkingType:(NetworkingType)type;
 
 - (void)connect;
 - (void)connectWithHost:(NSString *)host andPort:(uint16_t)port;

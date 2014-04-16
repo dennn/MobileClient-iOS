@@ -56,7 +56,7 @@
         _sensorManager = [DENSensors new];
         
         // Specify whether to use raw sockets, or GCDAsyncSocket
-        _networkManager = [DENNetworking networkingControllerOfNetworkingType:LibrarySocket];
+        _networkManager = [DENNetworking new];
         _networkManager.delegate = self;
         [_networkManager searchForServices];
         
