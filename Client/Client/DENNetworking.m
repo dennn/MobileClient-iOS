@@ -92,8 +92,6 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 {    
     NSLog(@"Service name: %@ , ip: %@ , port %li", [sender name], [sender hostName], (long)[sender port]);
     [self connectWithHost:[sender hostName] andPort:(uint32_t)[sender port]];
-    [self.serviceResolver stop];
-    [self.serviceBrowser stop];
 }
 
 - (void)netServiceWillResolve:(NSNetService *)sender
@@ -110,10 +108,17 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 - (void)connect
 {
     NSError *err = nil;
+    
     self.connected = CONNECTING;
-    if (![self.socket connectToHost:self.host onPort:self.port error:&err]) {
-        NSLog(@"Error connecting to host, %@", err);
+    [self.socket connectToHost:self.host onPort:self.port withTimeout:2.0 error:&err];
+    if (err) {
+        if ([self.delegate respondsToSelector:@selector(didFailToConnect)]) {
+            [self.delegate didFailToConnect];
+        }
         self.connected = DISCONNECTED;
+    } else {
+        [self.serviceResolver stop];
+        [self.serviceBrowser stop];
     }
 }
 
@@ -146,6 +151,37 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 
 - (void)socketDidDisconnect:(GCDAsyncSocket *)sock withError:(NSError *)err
 {
+    if (err.domain == GCDAsyncSocketErrorDomain) {
+        switch (err.code) {
+            case GCDAsyncSocketConnectTimeoutError:
+                if ([self.delegate respondsToSelector:@selector(didFailToConnect)]) {
+                    [self.delegate didFailToConnect];
+                }
+                break;
+                
+            case GCDAsyncSocketBadParamError:
+                if ([self.delegate respondsToSelector:@selector(didFailToConnect)]) {
+                    [self.delegate didFailToConnect];
+                }
+                break;
+                
+            case GCDAsyncSocketBadConfigError:
+                if ([self.delegate respondsToSelector:@selector(didFailToConnect)]) {
+                    [self.delegate didFailToConnect];
+                }
+                break;
+                
+            default:
+                break;
+        }
+    } else if (err.domain == NSPOSIXErrorDomain) {
+        if (err.code == 65) {
+            if ([self.delegate respondsToSelector:@selector(didFailToConnect)]) {
+                [self.delegate didFailToConnect];
+            }
+        }
+    }
+    
     [self disconnect];
 }
 

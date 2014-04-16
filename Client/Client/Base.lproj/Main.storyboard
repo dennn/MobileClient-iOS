@@ -9,7 +9,7 @@
             <objects>
                 <tableViewController title="Servers" id="Zrn-5h-nCQ" customClass="DENConnectionViewController" sceneMemberID="viewController">
                     <tableView key="view" opaque="NO" clipsSubviews="YES" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="xma-ar-ola">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="524"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <prototypes>
@@ -28,7 +28,7 @@
                         </connections>
                     </tableView>
                     <navigationItem key="navigationItem" title="Servers" id="hcL-G9-wIg"/>
-                    <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
+                    <simulatedToolbarMetrics key="simulatedBottomBarMetrics" translucent="NO"/>
                     <connections>
                         <segue destination="bNe-cI-pJj" kind="modal" identifier="loadButton" modalTransitionStyle="crossDissolve" id="4aN-Mc-7yL"/>
                     </connections>
@@ -40,20 +40,11 @@
         <!--Navigation Controller-->
         <scene sceneID="xI1-Pc-hek">
             <objects>
-                <navigationController definesPresentationContext="YES" toolbarHidden="NO" id="lxo-IV-TIL" sceneMemberID="viewController">
-                    <toolbarItems>
-                        <barButtonItem title="Refresh" id="kj4-NG-9US"/>
-                        <barButtonItem style="plain" systemItem="flexibleSpace" id="HYf-4O-bLt"/>
-                        <barButtonItem title="Enter IP" id="bAN-d6-1Gc"/>
-                    </toolbarItems>
-                    <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
+                <navigationController definesPresentationContext="YES" id="lxo-IV-TIL" sceneMemberID="viewController">
+                    <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="b18-x4-tRE">
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
-                    <toolbar key="toolbar" opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="RDB-NX-uIr">
-                        <rect key="frame" x="0.0" y="524" width="320" height="44"/>
-                        <autoresizingMask key="autoresizingMask"/>
-                    </toolbar>
                     <connections>
                         <segue destination="Zrn-5h-nCQ" kind="relationship" relationship="rootViewController" id="7D2-JA-GFc"/>
                     </connections>

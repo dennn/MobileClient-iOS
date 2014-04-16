@@ -21,6 +21,7 @@ typedef NS_ENUM(NSInteger, ConnectionState) {
 - (void)willDisconnect;
 - (void)didConnect;
 - (void)didFindServices:(NSMutableArray *)services;
+- (void)didFailToConnect;
 
 @end
 

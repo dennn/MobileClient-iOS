@@ -117,6 +117,13 @@
     [self.networkManager searchForServices];
 }
 
+- (void)didFailToConnect
+{
+    if ([self.delegate respondsToSelector:@selector(didFailToConnect)]) {
+        [self.delegate didFailToConnect];
+    }
+}
+
 #pragma mark - Server event handling
 
 - (void)didReadServerRequest:(NSInteger)requestType withData:(NSDictionary *)JSONData

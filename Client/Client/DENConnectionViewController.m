@@ -9,7 +9,7 @@
 #import "DENConnectionViewController.h"
 #import "DENButtonViewController.h"
 
-@interface DENConnectionViewController () <DENClientProtocol>
+@interface DENConnectionViewController () <DENClientProtocol, UIAlertViewDelegate>
 
 @property (nonatomic, weak) IBOutlet UIButton *connectButton;
 @property (nonatomic, weak) IBOutlet UITextField *serverIP;
@@ -29,6 +29,14 @@
     self.client = [DENClient sharedManager];
     self.client.delegate = self;
     self.services = [NSMutableArray new];
+    
+    // Add the toolbar
+    self.navigationController.toolbarHidden = NO;
+    UIBarButtonItem *connectButton = [[UIBarButtonItem alloc] initWithTitle:@"Enter IP" style:UIBarButtonItemStylePlain target:self action:@selector(showEnterIP)];
+    UIBarButtonItem *space = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
+    
+    [self setToolbarItems:@[space, connectButton]];
+
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -155,6 +163,49 @@
     [self.client connectToService:service];
 }
 
+
+#pragma mark - Enter IP
+
+- (void)showEnterIP
+{
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Connection Details"
+                                                      message:@"Enter the IP address and port below"
+                                                     delegate:self
+                                            cancelButtonTitle:@"Cancel"
+                                            otherButtonTitles:@"Connect", nil];
+    alert.alertViewStyle = UIAlertViewStyleLoginAndPasswordInput;
+    
+    UITextField *IP = [alert textFieldAtIndex:0];
+    IP.placeholder = @"IP Address";
+    IP.keyboardType = UIKeyboardTypeDecimalPad;
+    
+    UITextField *port = [alert textFieldAtIndex:1];
+    port.placeholder = @"Port";
+    port.secureTextEntry = NO;
+    port.keyboardType = UIKeyboardTypeDecimalPad;
+    
+    [alert show];
+}
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex == 1) {
+        NSString *IP = [alertView textFieldAtIndex:0].text;
+        NSString *port = [alertView textFieldAtIndex:1].text;
+        [self.client connectWithHost:IP andPort:[port intValue]];
+    }
+}
+
+- (void)didFailToConnect
+{
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Connection Error"
+                                                    message:@"Couldn't connect to the server"
+                                                   delegate:nil
+                                          cancelButtonTitle:@"Ok"
+                                          otherButtonTitles:nil, nil];
+    
+    [alert show];
+}
 
 
 

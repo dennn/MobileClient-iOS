@@ -46,6 +46,7 @@ NS_ENUM(NSInteger, xbmc) {
 @optional
 - (void)shouldSetBackground:(NSString *)background;
 - (void)didFindServices:(NSMutableArray *)services;
+- (void)didFailToConnect;
 
 @end
 
