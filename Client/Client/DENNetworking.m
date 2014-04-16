@@ -56,16 +56,6 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 
 #pragma mark - NSServiceBrowser Delegate
 
-- (void)netServiceBrowserWillSearch:(NSNetServiceBrowser *)aNetServiceBrowser
-{
-    NSLog(@"Starting search");
-}
-
-- (void)netServiceBrowserDidStopSearch:(NSNetServiceBrowser *)aNetServiceBrowser
-{
-    NSLog(@"Stopped search");
-}
-
 - (void)netServiceBrowser:(NSNetServiceBrowser *)aNetServiceBrowser didFindService:(NSNetService *)aNetService moreComing:(BOOL)moreComing
 {
     [self.services addObject:aNetService];
@@ -76,32 +66,27 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
             [self.delegate didFindServices:self.services];
         }
     }
-    NSLog(@"Found service %@, resolving..., more coming: %d", aNetService.name, moreComing);
 }
 
 - (void)connectToService:(NSNetService *)service
 {
     self.serviceResolver = service;
     self.serviceResolver.delegate = self;
-    [self.serviceResolver resolveWithTimeout:5.0];
+    [self.serviceResolver resolveWithTimeout:2.0];
 }
 
 #pragma mark - NSNetServiceDelegate
 
 - (void)netServiceDidResolveAddress:(NSNetService *)sender
 {    
-    NSLog(@"Service name: %@ , ip: %@ , port %li", [sender name], [sender hostName], (long)[sender port]);
     [self connectWithHost:[sender hostName] andPort:(uint32_t)[sender port]];
-}
-
-- (void)netServiceWillResolve:(NSNetService *)sender
-{
-    NSLog(@"Will resolve net service");
 }
 
 - (void)netService:(NSNetService *)sender didNotResolve:(NSDictionary *)errorDict
 {
-    NSLog(@"Error resolving net service");
+    if ([self.delegate respondsToSelector:@selector(didFailToConnect)]) {
+        [self.delegate didFailToConnect];
+    }
     [self.serviceBrowser stop];
 }
 

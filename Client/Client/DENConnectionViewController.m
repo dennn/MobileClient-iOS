@@ -205,6 +205,9 @@
                                           otherButtonTitles:nil, nil];
     
     [alert show];
+    
+    [self.services removeAllObjects];
+    [self.tableView reloadData];
 }
 
 
