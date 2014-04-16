@@ -7,9 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "DENClient.h"
 
 @interface DENAppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
+@property (strong, nonatomic) DENClient *client;
 
 @end

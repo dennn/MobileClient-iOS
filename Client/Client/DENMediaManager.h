@@ -16,6 +16,7 @@
 - (void)downloadedFile:(NSData *)data;
 
 + (UIImage *)getImageWithFileName:(NSString *)fileName;
++ (NSURL *)getAudioFileWithFileName:(NSString *)fileName;
 
 @property (nonatomic, weak) DENClient *client;
 

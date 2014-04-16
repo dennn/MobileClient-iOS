@@ -58,7 +58,6 @@
         // Specify whether to use raw sockets, or GCDAsyncSocket
         _networkManager = [DENNetworking new];
         _networkManager.delegate = self;
-        [_networkManager searchForServices];
         
         _connected = DISCONNECTED;
 
@@ -101,6 +100,23 @@
     self.connected = DISCONNECTED;
 }
 
+- (void)didFindServices:(NSMutableArray *)services
+{
+    if ([self.delegate respondsToSelector:@selector(didFindServices:)]) {
+        [self.delegate didFindServices:services];
+    }
+}
+
+- (void)connectToService:(NSNetService *)service
+{
+    [self.networkManager connectToService:service];
+}
+
+- (void)searchForServices
+{
+    [self.networkManager searchForServices];
+}
+
 #pragma mark - Server event handling
 
 - (void)didReadServerRequest:(NSInteger)requestType withData:(NSDictionary *)JSONData
@@ -128,14 +144,11 @@
                 [self.networkManager writeData:[DENClient createErrorMessageForCode:DATA_BEFORE_HANDSHAKE]];
             } else {
                 [self sendGameDataForSensors:[JSONData objectForKey:@"Devices"]];
-                if ([self.delegate respondsToSelector:@selector(shouldVibratePhone:)]) {
-                    [self.delegate shouldVibratePhone:[[JSONData objectForKey:@"Vibrate"] unsignedIntegerValue]];
-                }
+                [DENClient shouldPlayMusic:[JSONData objectForKey:@"PlaySound"]];
+                [DENClient shouldVibratePhone:[[JSONData objectForKey:@"Vibrate"] unsignedIntegerValue]];
+                
                 if ([self.delegate respondsToSelector:@selector(shouldSetBackground:)]) {
                     [self.delegate shouldSetBackground:[JSONData objectForKey:@"SetBackground"]];
-                }
-                if ([self.delegate respondsToSelector:@selector(shouldPlayMusic:)]) {
-                    [self.delegate shouldPlayMusic:[JSONData objectForKey:@"PlaySound"]];
                 }
             }
             break;
@@ -408,5 +421,29 @@
     
     return nil;
 }
+
+#pragma mark - Media playing
+
++ (void)shouldPlayMusic:(NSString *)song
+{
+    NSURL *songURL = [DENMediaManager getAudioFileWithFileName:song];
+    
+    if (songURL) {
+        SystemSoundID sound;
+        AudioServicesCreateSystemSoundID((__bridge CFURLRef)songURL, &sound);
+        AudioServicesPlaySystemSound(sound);
+    }
+}
+
++ (void)shouldVibratePhone:(NSUInteger)duration
+{
+    //There's no way to change the duration of a vibration in iOS,
+    //for now we should ignore the milliseconds and just play a single
+    //vibration of duration 0.5s
+    if (duration != 0) {
+        AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
+    }
+}
+
 
 @end

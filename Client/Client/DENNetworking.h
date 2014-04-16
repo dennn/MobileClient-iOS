@@ -20,6 +20,7 @@ typedef NS_ENUM(NSInteger, ConnectionState) {
 - (void)didDownloadFile:(NSData *)file;
 - (void)willDisconnect;
 - (void)didConnect;
+- (void)didFindServices:(NSMutableArray *)services;
 
 @end
 
@@ -29,14 +30,18 @@ typedef NS_ENUM(NSInteger, ConnectionState) {
 - (void)connectWithHost:(NSString *)host andPort:(uint16_t)port;
 - (void)disconnect;
 - (void)searchForServices;
+- (void)connectToService:(NSNetService *)service;
+
 
 - (void)writeData:(NSData *)data;
 - (void)restartListening;
 - (void)startDownloadingFile:(NSData *)file ofSize:(NSUInteger)size;
 
+
 // Delegate
 @property (nonatomic, weak) id <DENNetworkingProtocol> delegate;
 
 @property (nonatomic, assign) BOOL downloadingFiles;
+
 
 @end

@@ -43,9 +43,9 @@ NS_ENUM(NSInteger, xbmc) {
 
 @protocol DENClientProtocol <NSObject>
 
+@optional
 - (void)shouldSetBackground:(NSString *)background;
-- (void)shouldPlayMusic:(NSString *)song;
-- (void)shouldVibratePhone:(NSUInteger)duration;
+- (void)didFindServices:(NSMutableArray *)services;
 
 @end
 
@@ -57,6 +57,8 @@ NS_ENUM(NSInteger, xbmc) {
 - (void)connect;
 - (void)connectWithHost:(NSString *)host andPort:(uint16_t)port;
 - (void)disconnect;
+- (void)connectToService:(NSNetService *)service;
+- (void)searchForServices;
 
 // Media Downloading
 - (void)completedDownloadingMedia;

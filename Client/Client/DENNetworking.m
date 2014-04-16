@@ -26,6 +26,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 @property (nonatomic, strong) NSNetService *serviceResolver;
 
 @property (nonatomic, strong) GCDAsyncSocket *socket;
+@property (nonatomic, strong) NSMutableArray *services;
 
 @end
 
@@ -41,6 +42,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
         _connected = DISCONNECTED;
         _downloadingFiles = NO;
         _socket = [[GCDAsyncSocket alloc] initWithDelegate:self delegateQueue:dispatch_get_main_queue()];
+        _services = [NSMutableArray new];
     }
     
     return self;
@@ -48,6 +50,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 
 - (void)searchForServices
 {
+    [self.services removeAllObjects];
     [self.serviceBrowser searchForServicesOfType:kBonjourService inDomain:@"local"];
 }
 
@@ -65,12 +68,22 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 
 - (void)netServiceBrowser:(NSNetServiceBrowser *)aNetServiceBrowser didFindService:(NSNetService *)aNetService moreComing:(BOOL)moreComing
 {
+    [self.services addObject:aNetService];
+
+    if (moreComing == NO) {
+        // Send a delegate method to update
+        if ([self.delegate respondsToSelector:@selector(didFindServices:)]) {
+            [self.delegate didFindServices:self.services];
+        }
+    }
     NSLog(@"Found service %@, resolving..., more coming: %d", aNetService.name, moreComing);
-  //  if ([aNetService.name isEqualToString:@"GPServer (deniss-mbp)"] || [aNetService.name isEqualToString:@"GPServer (Deniss-MacBook-Pro.local)"]) {
-        self.serviceResolver = aNetService;
-        self.serviceResolver.delegate = self;
-        [self.serviceResolver resolveWithTimeout:5.0];
-  //  }
+}
+
+- (void)connectToService:(NSNetService *)service
+{
+    self.serviceResolver = service;
+    self.serviceResolver.delegate = self;
+    [self.serviceResolver resolveWithTimeout:5.0];
 }
 
 #pragma mark - NSNetServiceDelegate
@@ -80,6 +93,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
     NSLog(@"Service name: %@ , ip: %@ , port %li", [sender name], [sender hostName], (long)[sender port]);
     [self connectWithHost:[sender hostName] andPort:(uint32_t)[sender port]];
     [self.serviceResolver stop];
+    [self.serviceBrowser stop];
 }
 
 - (void)netServiceWillResolve:(NSNetService *)sender
@@ -132,17 +146,11 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 
 - (void)socketDidDisconnect:(GCDAsyncSocket *)sock withError:(NSError *)err
 {
-    if ([self.delegate respondsToSelector:@selector(willDisconnect)]) {
-        [self.delegate willDisconnect];
-    }
-    
-    self.connected = DISCONNECTED;
+    [self disconnect];
 }
 
 - (void)writeData:(NSData *)data
 {
-    NSDictionary *JSONOutput = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:nil];
-    NSLog(@"JSON request: %@", JSONOutput);
     [self.socket writeData:data withTimeout:-1 tag:1];
 }
 
@@ -167,7 +175,6 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
             [self writeData:[DENClient createErrorMessageForCode:DESERIALIZATION_ERROR]];
         } else {
             NSInteger requestType = [[JSONOutput objectForKey:@"Request_type"] integerValue];
-            NSLog(@"%@", JSONOutput);
             if ([self.delegate respondsToSelector:@selector(didReadServerRequest:withData:)]) {
                 [self.delegate didReadServerRequest:requestType withData:JSONOutput];
             }
@@ -184,6 +191,4 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
     [self.socket readDataToData:[GCDAsyncSocket LFData] withTimeout:-1 tag:2];
 }
 
-
 @end
-

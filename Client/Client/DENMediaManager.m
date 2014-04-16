@@ -174,12 +174,13 @@ typedef NS_ENUM(NSInteger, Media_Type) {
     return NULL;
 }
 
-+ (NSData *)getAudioFileWithFileName:(NSString *)fileName
++ (NSURL *)getAudioFileWithFileName:(NSString *)fileName
 {
     NSString *filePath = [DENMediaManager getFilePathForFile:fileName];
     
     if ([[NSFileManager defaultManager] fileExistsAtPath:filePath]) {
-        return [NSData dataWithContentsOfFile:filePath];
+        return [NSURL URLWithString:filePath];
+
     }
     
     return NULL;

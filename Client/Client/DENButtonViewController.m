@@ -41,7 +41,6 @@
     [super viewDidLoad];
 	// Do any additional setup after loading the view.
     self.client = [DENClient sharedManager];
-    self.client.delegate = self;
     self.client.buttonViewController = self;
     self.collectionView.dataSource = self.client.buttonManager;
     self.client.buttonManager.collectionView = self.collectionView;
@@ -53,6 +52,8 @@
                   forKeyPath:@"connected"
                      options: NSKeyValueObservingOptionNew
                      context:nil];
+    
+    self.client.delegate = self;
 }
 
 - (void)didReceiveMemoryWarning
@@ -153,27 +154,6 @@
     
     if (backgroundImage) {
         self.collectionView.backgroundView = [[UIImageView alloc] initWithImage:backgroundImage];
-    }
-}
-
-- (void)shouldPlayMusic:(NSString *)song
-{
-    NSURL *songURL = [NSURL URLWithString:song];
-    
-    if (songURL) {
-        SystemSoundID sound;
-        AudioServicesCreateSystemSoundID((__bridge CFURLRef)songURL, &sound);
-        AudioServicesPlaySystemSound(sound);
-    }
-}
-
-- (void)shouldVibratePhone:(NSUInteger)duration
-{
-    //There's no way to change the duration of a vibration in iOS,
-    //for now we should ignore the milliseconds and just play a single
-    //vibration of duration 0.5s
-    if (duration != 0) {
-        AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
     }
 }
 

@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "DENClient.h"
 
-@interface DENConnectionViewController : UIViewController
+@interface DENConnectionViewController : UITableViewController <UITableViewDataSource, UITableViewDelegate>
 
 @property (nonatomic, strong) DENClient *client;
 

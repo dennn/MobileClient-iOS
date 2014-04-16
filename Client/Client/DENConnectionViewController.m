@@ -9,12 +9,13 @@
 #import "DENConnectionViewController.h"
 #import "DENButtonViewController.h"
 
-@interface DENConnectionViewController ()
+@interface DENConnectionViewController () <DENClientProtocol>
 
 @property (nonatomic, weak) IBOutlet UIButton *connectButton;
 @property (nonatomic, weak) IBOutlet UITextField *serverIP;
 @property (nonatomic, weak) IBOutlet UITextField *serverPort;
-@property (nonatomic, weak) IBOutlet UITextField *userName;
+
+@property (nonatomic, strong) NSMutableArray *services;
 
 @end
 
@@ -26,6 +27,8 @@
 	// Do any additional setup after loading the view, typically from a nib.
     
     self.client = [DENClient sharedManager];
+    self.client.delegate = self;
+    self.services = [NSMutableArray new];
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -34,11 +37,17 @@
                   forKeyPath:@"connected"
                      options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew
                      context:nil];
+    
+    self.client.delegate = self;
+    [self.client searchForServices];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
 {
     [self.client removeObserver:self forKeyPath:@"connected"];
+    
+    [self.services removeAllObjects];
+    [self.tableView reloadData];
 }
 
 - (void)didReceiveMemoryWarning
@@ -105,5 +114,48 @@
 {
     [self performSegueWithIdentifier:@"loadButton" sender:self];
 }
+
+#pragma mark - Service picker
+
+- (void)didFindServices:(NSMutableArray *)services
+{
+    [self.services addObjectsFromArray:services];
+    
+    [self.tableView reloadData];
+}
+
+#pragma mark - Table View
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return 1;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return [self.services count];
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    static NSString *cellIdentifier = @"serviceCell";
+    
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
+    if (cell == nil) {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
+    }
+    
+    NSNetService *service = [self.services objectAtIndex:indexPath.row];
+    cell.textLabel.text = service.name;
+    
+    return cell;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    NSNetService *service = [self.services objectAtIndex:indexPath.row];
+    [self.client connectToService:service];
+}
+
+
+
 
 @end
