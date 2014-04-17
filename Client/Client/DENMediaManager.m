@@ -80,7 +80,7 @@ typedef NS_ENUM(NSInteger, Media_Type) {
 - (void)downloadedFile:(NSData *)data
 {
     [DENMediaManager writeData:data withFileName:self.currentDownloadedItem.name];
-    
+        
     [self.filesToDownload removeObjectAtIndex:0];
     [self startDownloadingItems];
 }
