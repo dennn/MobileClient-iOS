@@ -64,7 +64,7 @@
 		A237D91018FF3519008EC9EC /* DENFakeButtonCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DENFakeButtonCell.h; sourceTree = "<group>"; };
 		A237D91118FF3519008EC9EC /* DENFakeButtonCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DENFakeButtonCell.m; sourceTree = "<group>"; };
 		A23BFC6E18BF76CE00E8B6A7 /* Podfile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Podfile; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
-		A2721F06186CCC5200CE2513 /* Client.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = Client.app; path = Dimensions.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A2721F06186CCC5200CE2513 /* Dimensions.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Dimensions.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2721F09186CCC5200CE2513 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		A2721F0B186CCC5200CE2513 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		A2721F0D186CCC5200CE2513 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
@@ -183,7 +183,7 @@
 		A2721F07186CCC5200CE2513 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A2721F06186CCC5200CE2513 /* Client.app */,
+				A2721F06186CCC5200CE2513 /* Dimensions.app */,
 				A2721F27186CCC5300CE2513 /* ClientTests.xctest */,
 			);
 			name = Products;
@@ -266,7 +266,7 @@
 			);
 			name = Dimensions;
 			productName = Client;
-			productReference = A2721F06186CCC5200CE2513 /* Client.app */;
+			productReference = A2721F06186CCC5200CE2513 /* Dimensions.app */;
 			productType = "com.apple.product-type.application";
 		};
 		A2721F26186CCC5300CE2513 /* ClientTests */ = {
@@ -297,6 +297,9 @@
 				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = Mulan;
 				TargetAttributes = {
+					A2721F05186CCC5200CE2513 = {
+						DevelopmentTeam = G64RCGUR8N;
+					};
 					A2721F26186CCC5300CE2513 = {
 						TestTargetID = A2721F05186CCC5200CE2513;
 					};
@@ -521,6 +524,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Client/Client-Prefix.pch";
 				HEADER_SEARCH_PATHS = "$(inherited)";
@@ -535,6 +540,7 @@
 					Security,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "44C59504-2D04-4244-A133-4220B0ED2390";
 				TARGETED_DEVICE_FAMILY = 1;
 				USER_HEADER_SEARCH_PATHS = "$(inherited)";
 				WRAPPER_EXTENSION = app;
@@ -547,6 +553,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Distribution: Denis Ogun (G64RCGUR8N)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: Denis Ogun (G64RCGUR8N)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Client/Client-Prefix.pch";
 				HEADER_SEARCH_PATHS = "$(inherited)";
@@ -561,6 +569,7 @@
 					Security,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "F9D451E5-DB9A-410B-8A73-0CC90767DCD4";
 				TARGETED_DEVICE_FAMILY = 1;
 				USER_HEADER_SEARCH_PATHS = "$(inherited)";
 				WRAPPER_EXTENSION = app;
