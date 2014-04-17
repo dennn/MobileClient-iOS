@@ -250,9 +250,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		A2721F05186CCC5200CE2513 /* Client */ = {
+		A2721F05186CCC5200CE2513 /* Dimensions */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A2721F38186CCC5300CE2513 /* Build configuration list for PBXNativeTarget "Client" */;
+			buildConfigurationList = A2721F38186CCC5300CE2513 /* Build configuration list for PBXNativeTarget "Dimensions" */;
 			buildPhases = (
 				AB2FE8A4709F4091A5CB372A /* Check Pods Manifest.lock */,
 				A2721F02186CCC5200CE2513 /* Sources */,
@@ -264,7 +264,7 @@
 			);
 			dependencies = (
 			);
-			name = Client;
+			name = Dimensions;
 			productName = Client;
 			productReference = A2721F06186CCC5200CE2513 /* Client.app */;
 			productType = "com.apple.product-type.application";
@@ -315,7 +315,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				A2721F05186CCC5200CE2513 /* Client */,
+				A2721F05186CCC5200CE2513 /* Dimensions */,
 				A2721F26186CCC5300CE2513 /* ClientTests */,
 			);
 		};
@@ -412,7 +412,7 @@
 /* Begin PBXTargetDependency section */
 		A2721F2D186CCC5300CE2513 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = A2721F05186CCC5200CE2513 /* Client */;
+			target = A2721F05186CCC5200CE2513 /* Dimensions */;
 			targetProxy = A2721F2C186CCC5300CE2513 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -619,7 +619,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		A2721F38186CCC5300CE2513 /* Build configuration list for PBXNativeTarget "Client" */ = {
+		A2721F38186CCC5300CE2513 /* Build configuration list for PBXNativeTarget "Dimensions" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A2721F39186CCC5300CE2513 /* Debug */,
