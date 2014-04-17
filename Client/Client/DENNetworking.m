@@ -136,6 +136,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 
 - (void)socketDidDisconnect:(GCDAsyncSocket *)sock withError:(NSError *)err
 {
+    NSLog(@"Disconnected because: %@", [err localizedDescription]);
     if (err.domain == GCDAsyncSocketErrorDomain) {
         switch (err.code) {
             case GCDAsyncSocketConnectTimeoutError:
@@ -199,6 +200,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
             if ([self.delegate respondsToSelector:@selector(didReadServerRequest:withData:)]) {
                 [self.delegate didReadServerRequest:requestType withData:JSONOutput];
             }
+            
             if (requestType != GAME_START) {
                 [self.socket readDataToData:[GCDAsyncSocket LFData] withTimeout:-1 tag:2];
             }

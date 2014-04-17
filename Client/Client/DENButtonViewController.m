@@ -160,10 +160,14 @@
 
 - (void)shouldSetBackground:(NSString *)background
 {
-    UIImage *backgroundImage = [DENMediaManager getImageWithFileName:background];
-    
-    if (backgroundImage) {
-        self.collectionView.backgroundView = [[UIImageView alloc] initWithImage:backgroundImage];
+    if (background != nil) {
+        UIImage *backgroundImage = [DENMediaManager getImageWithFileName:background];
+        
+        NSLog(@"Setting background: %@", background);
+        
+        if (backgroundImage) {
+            self.collectionView.backgroundView = [[UIImageView alloc] initWithImage:backgroundImage];
+        }
     }
 }
 
