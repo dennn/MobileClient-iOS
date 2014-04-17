@@ -106,7 +106,7 @@ typedef NS_ENUM(NSInteger, Media_Type) {
             NSLog(@"%@", error.localizedDescription);
         }
         else {
-            // *** OPTIONAL *** Mark the directory as excluded from iCloud backups
+            //Mark the directory as excluded from iCloud backups
             NSURL *url = [NSURL fileURLWithPath:appSupportDir];
             if (![url setResourceValue:@YES
                                 forKey:NSURLIsExcludedFromBackupKey
@@ -179,8 +179,8 @@ typedef NS_ENUM(NSInteger, Media_Type) {
     NSString *filePath = [DENMediaManager getFilePathForFile:fileName];
     
     if ([[NSFileManager defaultManager] fileExistsAtPath:filePath]) {
-        return [NSURL URLWithString:filePath];
-
+        NSString *filePathEscaped = [filePath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+        return [NSURL URLWithString:filePathEscaped];
     }
     
     return NULL;

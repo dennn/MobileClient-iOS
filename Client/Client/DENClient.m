@@ -463,12 +463,14 @@ static NSString * const kSSIDName = @"dd-wrt";
 
 + (void)shouldPlayMusic:(NSString *)song
 {
-    NSURL *songURL = [DENMediaManager getAudioFileWithFileName:song];
-    
-    if (songURL) {
-        SystemSoundID sound;
-        AudioServicesCreateSystemSoundID((__bridge CFURLRef)songURL, &sound);
-        AudioServicesPlaySystemSound(sound);
+    if (song) {
+        NSURL *songURL = [DENMediaManager getAudioFileWithFileName:song];
+        
+        if (songURL) {
+            SystemSoundID sound;
+            AudioServicesCreateSystemSoundID((__bridge CFURLRef)songURL, &sound);
+            AudioServicesPlaySystemSound(sound);
+        }
     }
 }
 
