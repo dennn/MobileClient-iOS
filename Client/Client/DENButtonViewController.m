@@ -93,6 +93,11 @@
     self.gestureView = [[UIView alloc] initWithFrame:self.view.bounds];
     self.gestureView.backgroundColor = [UIColor whiteColor];
     
+    UIImageView *xbmcLogo = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"XBMC_Logo"]];
+    [xbmcLogo setCenter:CGPointMake(self.gestureView.bounds.size.width/2, self.gestureView.bounds.size.height/2)];
+    
+    [self.gestureView addSubview:xbmcLogo];
+    
     // Add tap
     self.tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
     self.tapGesture.numberOfTapsRequired = 1;
