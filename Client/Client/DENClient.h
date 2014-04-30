@@ -38,7 +38,8 @@ NS_ENUM(NSInteger, xbmc) {
     SWIPE_LEFT,
     SWIPE_RIGHT,
     SWIPE_UP,
-    SWIPE_DOWN
+    SWIPE_DOWN,
+    BACK
 };
 
 @protocol DENClientProtocol <NSObject>

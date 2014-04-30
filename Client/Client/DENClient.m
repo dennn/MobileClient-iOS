@@ -13,6 +13,8 @@
 #import "NSMutableArray+Queue.h"
 #import "DENButtonViewController.h"
 
+#import "DENNSUserDefaults.h"
+
 #import <TargetConditionals.h>
 
 @import SystemConfiguration.CaptiveNetwork;
@@ -54,7 +56,7 @@ static NSString * const kSSIDName = @"dd-wrt";
 - (instancetype)init
 {
     if (self = [super init]) {
-        _username = @"Guest_iOS";
+        _username = [NSUserDefaults standardUserDefaults].userName;
         _handShaked = NO;
 
         _sensorManager = [DENSensors new];
@@ -142,7 +144,7 @@ static NSString * const kSSIDName = @"dd-wrt";
         
     // We can't get the SSID using Simulator
     
-#if TARGET_IPHONE_SIMULATOR
+#if (TARGET_IPHONE_SIMULATOR || DEBUG)
     return YES;
 #else
     if ([ssid isEqualToString:kSSIDName]) {
@@ -290,6 +292,9 @@ static NSString * const kSSIDName = @"dd-wrt";
 
 - (void)completeHandshake
 {
+    if (self.username == nil) {
+        self.username = [NSUserDefaults standardUserDefaults].userName;
+    }
     NSDictionary *response = @{@"Response": @1, @"Username": self.username};
     NSError *error;
     NSData *data = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];

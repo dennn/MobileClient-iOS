@@ -12,3 +12,15 @@
 #define COCOAPODS_VERSION_MINOR_CocoaAsyncSocket 3
 #define COCOAPODS_VERSION_PATCH_CocoaAsyncSocket 4
 
+// NSUserDefaults+Property
+#define COCOAPODS_POD_AVAILABLE_NSUserDefaults_Property
+#define COCOAPODS_VERSION_MAJOR_NSUserDefaults_Property 1
+#define COCOAPODS_VERSION_MINOR_NSUserDefaults_Property 0
+#define COCOAPODS_VERSION_PATCH_NSUserDefaults_Property 0
+
+// UIAlertView+Blocks
+#define COCOAPODS_POD_AVAILABLE_UIAlertView_Blocks
+#define COCOAPODS_VERSION_MAJOR_UIAlertView_Blocks 0
+#define COCOAPODS_VERSION_MINOR_UIAlertView_Blocks 8
+#define COCOAPODS_VERSION_PATCH_UIAlertView_Blocks 1
+

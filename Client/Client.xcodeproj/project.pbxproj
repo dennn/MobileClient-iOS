@@ -31,6 +31,7 @@
 		A2756DB218BF8240009010E8 /* DENNetworking.m in Sources */ = {isa = PBXBuildFile; fileRef = A2756DB118BF8240009010E8 /* DENNetworking.m */; };
 		A2906E71186CD21A00B02D43 /* DENClient.m in Sources */ = {isa = PBXBuildFile; fileRef = A2906E70186CD21A00B02D43 /* DENClient.m */; };
 		A2AC3858186E0D78006751A9 /* DENSensors.m in Sources */ = {isa = PBXBuildFile; fileRef = A2AC3857186E0D78006751A9 /* DENSensors.m */; };
+		A2D850FE1911599E00746B79 /* DENNSUserDefaults.m in Sources */ = {isa = PBXBuildFile; fileRef = A2D850FD1911599E00746B79 /* DENNSUserDefaults.m */; };
 		A2F65B3118C121CD00A01F5B /* DENButtonViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A2F65B3018C121CD00A01F5B /* DENButtonViewController.m */; };
 /* End PBXBuildFile section */
 
@@ -89,6 +90,8 @@
 		A2906E70186CD21A00B02D43 /* DENClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DENClient.m; sourceTree = "<group>"; };
 		A2AC3856186E0D78006751A9 /* DENSensors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DENSensors.h; sourceTree = "<group>"; };
 		A2AC3857186E0D78006751A9 /* DENSensors.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DENSensors.m; sourceTree = "<group>"; };
+		A2D850FC1911599E00746B79 /* DENNSUserDefaults.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DENNSUserDefaults.h; sourceTree = "<group>"; };
+		A2D850FD1911599E00746B79 /* DENNSUserDefaults.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DENNSUserDefaults.m; sourceTree = "<group>"; };
 		A2F65B2F18C121CD00A01F5B /* DENButtonViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DENButtonViewController.h; sourceTree = "<group>"; };
 		A2F65B3018C121CD00A01F5B /* DENButtonViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DENButtonViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -152,6 +155,8 @@
 			children = (
 				A209E98918B0EDD700DA0A13 /* NSMutableArray+Queue.h */,
 				A209E98A18B0EDD700DA0A13 /* NSMutableArray+Queue.m */,
+				A2D850FC1911599E00746B79 /* DENNSUserDefaults.h */,
+				A2D850FD1911599E00746B79 /* DENNSUserDefaults.m */,
 			);
 			name = Other;
 			sourceTree = "<group>";
@@ -397,6 +402,7 @@
 				A2721F20186CCC5300CE2513 /* DENConnectionViewController.m in Sources */,
 				A2756DB218BF8240009010E8 /* DENNetworking.m in Sources */,
 				A22CA57F18D0717700426B7A /* DENButton.m in Sources */,
+				A2D850FE1911599E00746B79 /* DENNSUserDefaults.m in Sources */,
 				A2F65B3118C121CD00A01F5B /* DENButtonViewController.m in Sources */,
 				A209E98B18B0EDD700DA0A13 /* NSMutableArray+Queue.m in Sources */,
 			);

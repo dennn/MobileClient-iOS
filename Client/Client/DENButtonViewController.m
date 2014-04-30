@@ -98,6 +98,11 @@
     
     [self.gestureView addSubview:xbmcLogo];
     
+    UIImageView *swipeLeftLogo = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"Swipe"]];
+    [swipeLeftLogo setCenter:CGPointMake(self.gestureView.bounds.size.width/2, self.gestureView.bounds.size.height - 25)];
+    
+    [self.gestureView addSubview:swipeLeftLogo];
+    
     // Add tap
     self.tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
     self.tapGesture.numberOfTapsRequired = 1;
@@ -138,7 +143,11 @@
 
 - (void)handleSwipeLeft:(UISwipeGestureRecognizer *)gesture
 {
-    [self.client.xbmcQueue enqueue:[NSNumber numberWithInteger:SWIPE_LEFT]];
+    if (gesture.numberOfTouches == 1) {
+        [self.client.xbmcQueue enqueue:[NSNumber numberWithInteger:SWIPE_LEFT]];
+    } else if (gesture.numberOfTouches == 2) {
+        [self.client.xbmcQueue enqueue:[NSNumber numberWithInteger:BACK]];
+    }
 }
 
 - (void)handleSwipeRight:(UISwipeGestureRecognizer *)gesture

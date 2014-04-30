@@ -8,6 +8,9 @@
 
 #import "DENConnectionViewController.h"
 #import "DENButtonViewController.h"
+#import "DENNSUserDefaults.h"
+
+#import <UIAlertView+Blocks.h>
 
 @interface DENConnectionViewController () <DENClientProtocol, UIAlertViewDelegate>
 
@@ -120,8 +123,30 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSNetService *service = [self.services objectAtIndex:indexPath.row];
-    [self.client connectToService:service];
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
+    if (defaults.userName == nil) {
+        UIAlertView *av = [[UIAlertView alloc] initWithTitle:@"Enter user name"
+                                                     message:@"Please enter your in game display name"
+                                                    delegate:nil
+                                           cancelButtonTitle:@"Cancel"
+                                           otherButtonTitles:@"OK", nil];
+        
+        av.alertViewStyle = UIAlertViewStylePlainTextInput;
+        av.tapBlock = ^(UIAlertView *alertView, NSInteger buttonIndex) {
+            if (buttonIndex == alertView.firstOtherButtonIndex) {
+                defaults.userName = [[alertView textFieldAtIndex:0] text];
+                [defaults synchronize];
+                NSNetService *service = [self.services objectAtIndex:indexPath.row];
+                [self.client connectToService:service];
+            }
+        };
+        
+        [av show];
+    } else {
+        NSNetService *service = [self.services objectAtIndex:indexPath.row];
+        [self.client connectToService:service];
+    }
 }
 
 
