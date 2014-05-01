@@ -134,6 +134,12 @@ static NSString * const kSSIDName = @"dd-wrt";
 
 + (BOOL)isOnCorrectWiFi
 {
+ 
+    // We can't get the SSID using Simulator
+#if (TARGET_IPHONE_SIMULATOR || DEBUG)
+    return YES;
+    
+#endif
     // Does not work on the simulator.
     NSString *ssid = nil;
     NSArray *ifs = (__bridge_transfer id)CNCopySupportedInterfaces();
@@ -143,18 +149,12 @@ static NSString * const kSSIDName = @"dd-wrt";
             ssid = info[@"SSID"];
         }
     }
-        
-    // We can't get the SSID using Simulator
     
-#if (TARGET_IPHONE_SIMULATOR || DEBUG)
-    return YES;
-#else
     if ([ssid isEqualToString:kSSIDName]) {
         return YES;
     } else {
         return NO;
     }
-#endif
     
 }
 

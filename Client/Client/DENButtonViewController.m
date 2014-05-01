@@ -71,6 +71,7 @@
 
 - (void)viewWillDisappear:(BOOL)animated
 {
+    [self.client removeObserver:self forKeyPath:NSStringFromSelector(@selector(connected))];
     [self.client removeObserver:self forKeyPath:NSStringFromSelector(@selector(waitingForGame))];
 }
 

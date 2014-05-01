@@ -136,7 +136,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 
 - (void)socketDidDisconnect:(GCDAsyncSocket *)sock withError:(NSError *)err
 {
-    NSLog(@"Disconnected because: %@", [err localizedDescription]);
+   // NSLog(@"Disconnected because: %@", [err localizedDescription]);
     if (err.domain == GCDAsyncSocketErrorDomain) {
         switch (err.code) {
             case GCDAsyncSocketConnectTimeoutError:
@@ -187,7 +187,6 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 {
     if (tag == kFileDownloadTag && self.downloadingFiles) {
         if ([self.delegate respondsToSelector:@selector(didDownloadFile:)]) {
-            NSLog(@"Downloaded file of size %lu", (unsigned long)[data length]);
             [self.delegate didDownloadFile:data];
         }
     } else if (self.downloadingFiles == NO) {
@@ -196,7 +195,6 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
         if (error) {
             [self writeData:[DENClient createErrorMessageForCode:DESERIALIZATION_ERROR]];
         } else {
-            NSLog(@"got response %@",  JSONOutput);
             NSInteger requestType = [[JSONOutput objectForKey:@"Request_type"] integerValue];
             if ([self.delegate respondsToSelector:@selector(didReadServerRequest:withData:)]) {
                 [self.delegate didReadServerRequest:requestType withData:JSONOutput];
@@ -211,7 +209,6 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 
 - (void)restartListening
 {
-    NSLog(@"Restarting listening");
     [self.socket readDataToData:[GCDAsyncSocket LFData] withTimeout:-1 tag:2];
 }
 

@@ -32,12 +32,12 @@
 
 - (void)processGameData:(NSDictionary *)buttonData
 {
+    
+    self.columns = [[buttonData objectForKey:@"Width"] integerValue];
+    self.rows = [[buttonData objectForKey:@"Height"] integerValue];
+    
     [buttonData enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-        if ([key isEqualToString:@"Width"]) {
-            self.columns = [obj integerValue];
-        } else if ([key isEqualToString:@"Height"]) {
-            self.rows = [obj integerValue];
-        } else {
+        if ([key isEqualToString:@"Width"] == NO && [key isEqualToString:@"Height"] == NO) {
             NSNumber *buttonID = [NSNumber numberWithInteger:[key integerValue]];
             DENButton *newButton = [[DENButton alloc] initWithDictionary:obj andID:[buttonID integerValue]];
             [self.buttons setObject:newButton forKey:[newButton indexPathForColumns:self.columns]];
