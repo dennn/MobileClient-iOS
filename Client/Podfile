@@ -2,3 +2,4 @@ platform :ios, '7.0'
 pod 'CocoaAsyncSocket'
 pod 'NSUserDefaults+Property'
 pod 'UIAlertView+Blocks'
+pod 'SVProgressHUD', :head

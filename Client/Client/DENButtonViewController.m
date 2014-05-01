@@ -11,6 +11,8 @@
 #import "DENMediaManager.h"
 #import "NSMutableArray+Queue.h"
 
+#import <SVProgressHUD.h>
+
 @import AudioToolbox;
 
 @interface DENButtonViewController ()
@@ -42,18 +44,23 @@
 	// Do any additional setup after loading the view.
     self.client = [DENClient sharedManager];
     self.client.buttonViewController = self;
+    self.client.delegate = self;
     self.collectionView.dataSource = self.client.buttonManager;
     self.client.buttonManager.collectionView = self.collectionView;
 }
 
 - (void)viewDidAppear:(BOOL)animated
 {
+    // Observe keys please
     [self.client addObserver:self   
-                  forKeyPath:@"connected"
-                     options: NSKeyValueObservingOptionNew
+                  forKeyPath:NSStringFromSelector(@selector(connected))
+                     options:NSKeyValueObservingOptionNew
+                     context:nil];
+    [self.client addObserver:self
+                  forKeyPath:NSStringFromSelector(@selector(waitingForGame))
+                     options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionInitial
                      context:nil];
     
-    self.client.delegate = self;
 }
 
 - (void)didReceiveMemoryWarning
@@ -64,7 +71,7 @@
 
 - (void)viewWillDisappear:(BOOL)animated
 {
-    [self.client removeObserver:self forKeyPath:@"connected"];
+    [self.client removeObserver:self forKeyPath:NSStringFromSelector(@selector(waitingForGame))];
 }
 
 - (NSUInteger)supportedInterfaceOrientations
@@ -76,9 +83,35 @@
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
-    if ([keyPath isEqualToString:@"connected"] && [object isKindOfClass:[DENClient class]]) {
+    if ([keyPath isEqualToString:NSStringFromSelector(@selector(connected))] && [object isKindOfClass:[DENClient class]]) {
         [self loadConnectionViewController];
+    } else if ([keyPath isEqualToString:NSStringFromSelector(@selector(waitingForGame))] && [object isKindOfClass:[DENClient class]]) {
+        if (self.client.waitingForGame == YES) {
+            [self addWaitingForGame];
+        } else {
+            [self removeWaitingForGame];
+        }
     }
+}
+
+#pragma mark - Waiting For Game
+
+- (void)addWaitingForGame
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if ([SVProgressHUD isVisible] == NO) {
+            [self removeBackground];
+            [SVProgressHUD showWithStatus:@"Waiting for game"];
+
+        }
+    });
+}
+
+- (void)removeWaitingForGame
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [SVProgressHUD dismiss];
+    });
 }
 
 #pragma mark - View Controller Transition
@@ -169,15 +202,21 @@
 
 - (void)shouldSetBackground:(NSString *)background
 {
-    if (background != nil) {
+    if (background) {
         UIImage *backgroundImage = [DENMediaManager getImageWithFileName:background];
-        
-        NSLog(@"Setting background: %@", background);
-        
+                
         if (backgroundImage) {
-            self.collectionView.backgroundView = [[UIImageView alloc] initWithImage:backgroundImage];
+            [UIView animateWithDuration:0.5f animations:^{
+                self.collectionView.backgroundView = [[UIImageView alloc] initWithImage:backgroundImage];
+            }];
         }
     }
+}
+
+- (void)removeBackground
+{
+    self.collectionView.backgroundView.alpha = 0.0f;
+    self.collectionView.backgroundColor = [UIColor blackColor];
 }
 
 @end

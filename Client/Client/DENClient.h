@@ -79,4 +79,6 @@ NS_ENUM(NSInteger, xbmc) {
 
 @property (nonatomic, weak) DENButtonViewController *buttonViewController;
 
+@property (nonatomic, assign) BOOL waitingForGame;
+
 @end

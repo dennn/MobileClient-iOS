@@ -196,6 +196,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
         if (error) {
             [self writeData:[DENClient createErrorMessageForCode:DESERIALIZATION_ERROR]];
         } else {
+            NSLog(@"got response %@",  JSONOutput);
             NSInteger requestType = [[JSONOutput objectForKey:@"Request_type"] integerValue];
             if ([self.delegate respondsToSelector:@selector(didReadServerRequest:withData:)]) {
                 [self.delegate didReadServerRequest:requestType withData:JSONOutput];

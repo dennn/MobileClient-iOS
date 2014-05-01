@@ -78,18 +78,31 @@
     }
 }
 
+- (void)gameEnded
+{
+    self.columns = 0;
+    self.rows = 0;
+    [self.buttons removeAllObjects];
+    [self.pressedButtons removeAllObjects];
+    [self.collectionView reloadData];
+}
+
 #pragma mark - Button Sending
 
 - (void)buttonPressed:(id)sender
 {
     UIButton *button = (UIButton *)sender;
-    [self.pressedButtons setObject:[NSNumber numberWithInteger:PRESSED] forKey:[NSNumber numberWithInteger:button.tag]];
+    if (self.pressedButtons) {
+        [self.pressedButtons setObject:[NSNumber numberWithInteger:PRESSED] forKey:[NSNumber numberWithInteger:button.tag]];
+    }
 }
 
 - (void)buttonReleased:(id)sender
 {
     UIButton *button = (UIButton *)sender;
-    [self.pressedButtons setObject:[NSNumber numberWithInteger:RELEASED] forKey:[NSNumber numberWithInteger:button.tag]];
+    if (self.pressedButtons) {
+        [self.pressedButtons setObject:[NSNumber numberWithInteger:RELEASED] forKey:[NSNumber numberWithInteger:button.tag]];
+    }
 }
 
 - (NSDictionary *)getButtonDataForID:(NSInteger)ID

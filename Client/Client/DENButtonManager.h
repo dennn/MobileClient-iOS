@@ -20,4 +20,6 @@ typedef NS_ENUM(NSInteger, Button_State) {
 - (void)processGameData:(NSDictionary *)buttonData;
 - (NSDictionary *)getButtonDataForID:(NSInteger)ID;
 
+- (void)gameEnded;
+
 @end
