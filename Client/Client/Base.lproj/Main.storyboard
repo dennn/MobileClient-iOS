@@ -50,15 +50,29 @@
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="You need to be on the Wi-Fi network &quot;dd-wrt&quot;. Please join it via the Settings App and try again" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="280" translatesAutoresizingMaskIntoConstraints="NO" id="pt2-uN-yS8">
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="You need to be on the Wi-Fi network &quot;dd-wrt&quot;. Please join it via the Settings App and try again" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="280" translatesAutoresizingMaskIntoConstraints="NO" id="pt2-uN-yS8">
                                 <rect key="frame" x="20" y="90" width="280" height="138"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" name="AvenirNext-DemiBold" family="Avenir Next" pointSize="17"/>
                                 <color key="textColor" red="0.14287533967391308" green="0.14287533967391308" blue="0.14287533967391308" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Wifi" translatesAutoresizingMaskIntoConstraints="NO" id="aCU-yE-I5v">
+                                <rect key="frame" x="82" y="272" width="156" height="131"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            </imageView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="aCU-yE-I5v" firstAttribute="centerX" secondItem="pt2-uN-yS8" secondAttribute="centerX" id="29V-Kq-Tcx"/>
+                            <constraint firstAttribute="centerY" secondItem="pt2-uN-yS8" secondAttribute="centerY" constant="125" id="BPC-cD-R0d"/>
+                            <constraint firstItem="pt2-uN-yS8" firstAttribute="top" secondItem="qmS-L0-bUi" secondAttribute="bottom" constant="70" id="Prt-0Z-GF2"/>
+                            <constraint firstAttribute="centerY" secondItem="aCU-yE-I5v" secondAttribute="centerY" constant="-53.5" id="WUO-xV-gNM"/>
+                            <constraint firstItem="aCU-yE-I5v" firstAttribute="leading" secondItem="5TI-B9-Pdq" secondAttribute="leading" constant="82" id="epk-jJ-v8R"/>
+                            <constraint firstAttribute="trailing" secondItem="pt2-uN-yS8" secondAttribute="trailing" constant="20" symbolic="YES" id="hms-yX-5PL"/>
+                            <constraint firstItem="llQ-As-N5m" firstAttribute="top" secondItem="aCU-yE-I5v" secondAttribute="bottom" constant="165" id="pag-UF-io8"/>
+                            <constraint firstItem="pt2-uN-yS8" firstAttribute="leading" secondItem="5TI-B9-Pdq" secondAttribute="leading" constant="20" symbolic="YES" id="taM-2g-4FH"/>
+                        </constraints>
                     </view>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="KbN-sa-h2Y" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -240,6 +254,7 @@
         <image name="Swipe_Right" width="64" height="64"/>
         <image name="Swipe_Up" width="64" height="64"/>
         <image name="Tap" width="64" height="64"/>
+        <image name="Wifi" width="256" height="202"/>
     </resources>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
         <simulatedStatusBarMetrics key="statusBar"/>
