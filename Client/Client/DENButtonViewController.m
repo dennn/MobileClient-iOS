@@ -12,6 +12,7 @@
 #import "NSMutableArray+Queue.h"
 
 #import <SVProgressHUD.h>
+#import <UIActionSheet+Blocks.h>
 
 @import AudioToolbox;
 
@@ -244,6 +245,31 @@
 {
     self.collectionView.backgroundView.alpha = 0.0f;
     self.collectionView.backgroundColor = [UIColor blackColor];
+}
+
+- (void)isGameMaster
+{
+    // Add the button
+    UIButton *infoButton = [UIButton buttonWithType:UIButtonTypeInfoLight];
+    infoButton.frame = CGRectMake(self.view.bounds.size.width - 44, self.view.bounds.size.height - 44, 44, 44);
+    infoButton.tintColor = [UIColor whiteColor];
+    [infoButton addTarget:self action:@selector(showQuit) forControlEvents:UIControlEventTouchUpInside];
+    
+    [self.view addSubview:infoButton];
+}
+
+- (void)showQuit
+{
+    [UIActionSheet showInView:self.view
+                    withTitle:nil
+            cancelButtonTitle:@"Cancel"
+       destructiveButtonTitle:@"Quit game"
+            otherButtonTitles:nil
+                     tapBlock:^(UIActionSheet *actionSheet, NSInteger buttonIndex) {
+                         if (buttonIndex == [actionSheet destructiveButtonIndex]) {
+                             [self.client sendKillCommand];
+                         }
+                     }];
 }
 
 @end

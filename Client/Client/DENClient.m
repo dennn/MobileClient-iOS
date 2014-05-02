@@ -32,6 +32,9 @@ static NSString * const kSSIDName = @"dd-wrt";
 @property (nonatomic, strong) DENMediaManager *mediaManager;
 @property (nonatomic, strong) DENSensors *sensorManager;
 
+@property (nonatomic, assign) BOOL isGameMaster;
+@property (nonatomic, assign) BOOL shouldSendKillCommand;
+
 // States
 @property BOOL handShaked;
 
@@ -66,12 +69,17 @@ static NSString * const kSSIDName = @"dd-wrt";
         _networkManager.delegate = self;
         
         _connected = DISCONNECTED;
-
-        _buttonManager = [DENButtonManager new];
+        
+        dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void){
+            _buttonManager = [DENButtonManager new];
+        });
         _mediaManager = [DENMediaManager new];
         _mediaManager.client = self;
         
         _waitingForGame = NO;
+        
+        _isGameMaster = NO;
+        _shouldSendKillCommand = NO;
         
         _xbmcQueue = [NSMutableArray new];
     }
@@ -105,6 +113,7 @@ static NSString * const kSSIDName = @"dd-wrt";
 - (void)willDisconnect
 {
     self.handShaked = NO;
+    self.isGameMaster = NO;
     self.connected = DISCONNECTED;
 }
 
@@ -187,13 +196,27 @@ static NSString * const kSSIDName = @"dd-wrt";
             if (self.handShaked == NO) {
                 [self.networkManager writeData:[DENClient createErrorMessageForCode:DATA_BEFORE_HANDSHAKE]];
             } else {
+                NSLog(@"%@", JSONData);
                 [self sendGameDataForSensors:[JSONData objectForKey:@"Devices"]];
                 [DENClient shouldPlayMusic:[JSONData objectForKey:@"PlaySound"]];
                 [DENClient shouldVibratePhone:[[JSONData objectForKey:@"Vibrate"] unsignedIntegerValue]];
                 
-                if ([JSONData objectForKey:@"SetBackground"] != NULL) {
+                NSNumber *gameMasterValue = [JSONData objectForKey:@"GameMaster"];
+
+                if (gameMasterValue != NULL) {
+                    if ([gameMasterValue integerValue] == 1) {
+                        self.isGameMaster = YES;
+                        if ([self.delegate respondsToSelector:@selector(isGameMaster)]) {
+                            [self.delegate isGameMaster];
+                        }
+                    }
+                }
+                
+                NSString *background = [JSONData objectForKey:@"SetBackground"];
+                
+                if (background != NULL) {
                     if ([self.delegate respondsToSelector:@selector(shouldSetBackground:)]) {
-                        [self.delegate shouldSetBackground:[JSONData objectForKey:@"SetBackground"]];
+                        [self.delegate shouldSetBackground:background];
                     }
                 }
             }
@@ -354,8 +377,14 @@ static NSString * const kSSIDName = @"dd-wrt";
         [deviceDictionary setObject:sensorData forKey:[NSString stringWithFormat:@"%li", (long)sensorValue]];
     }
     
-    response = @{@"Devices": deviceDictionary};
-            
+    if (self.shouldSendKillCommand == YES) {
+        response = @{@"Devices": deviceDictionary,
+                     @"GameKill": @1};
+        self.shouldSendKillCommand = NO;
+    } else {
+        response = @{@"Devices": deviceDictionary};
+    }
+    
     NSData *data = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];
     if (error) {
         NSLog(@"Error creating JSON while sending data");
@@ -421,6 +450,11 @@ static NSString * const kSSIDName = @"dd-wrt";
     } else {
         [self.networkManager writeData:data];
     }
+}
+
+- (void)sendKillCommand
+{
+    self.shouldSendKillCommand = YES;
 }
 
 #pragma mark - Errors

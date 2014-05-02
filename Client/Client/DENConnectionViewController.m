@@ -92,7 +92,6 @@
 - (void)didFindServices:(NSMutableArray *)services
 {
     self.services = services;
-    
     [self.tableView reloadData];
 }
 
@@ -147,6 +146,8 @@
         NSNetService *service = [self.services objectAtIndex:indexPath.row];
         [self.client connectToService:service];
     }
+    
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 
@@ -191,11 +192,6 @@
                                           otherButtonTitles:nil, nil];
     
     [alert show];
-    
-    [self.services removeAllObjects];
-    [self.tableView reloadData];
 }
-
-
 
 @end

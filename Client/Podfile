@@ -3,3 +3,4 @@ pod 'CocoaAsyncSocket'
 pod 'NSUserDefaults+Property'
 pod 'UIAlertView+Blocks'
 pod 'SVProgressHUD', :head
+pod 'UIActionSheet+Blocks'
