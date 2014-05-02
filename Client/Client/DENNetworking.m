@@ -136,7 +136,6 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 
 - (void)socketDidDisconnect:(GCDAsyncSocket *)sock withError:(NSError *)err
 {
-   // NSLog(@"Disconnected because: %@", [err localizedDescription]);
     if (err.domain == GCDAsyncSocketErrorDomain) {
         switch (err.code) {
             case GCDAsyncSocketConnectTimeoutError:
@@ -162,6 +161,10 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
         }
     } else if (err.domain == NSPOSIXErrorDomain) {
         if (err.code == 65) {
+            if ([self.delegate respondsToSelector:@selector(didFailToConnect)]) {
+                [self.delegate didFailToConnect];
+            }
+        } else if (err.code == 61) {
             if ([self.delegate respondsToSelector:@selector(didFailToConnect)]) {
                 [self.delegate didFailToConnect];
             }

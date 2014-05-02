@@ -91,7 +91,7 @@
 
 - (void)didFindServices:(NSMutableArray *)services
 {
-    [self.services addObjectsFromArray:services];
+    self.services = services;
     
     [self.tableView reloadData];
 }
