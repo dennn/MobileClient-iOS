@@ -22,6 +22,7 @@
 @property (nonatomic, strong) UISwipeGestureRecognizer *swipeGestureRight;
 @property (nonatomic, strong) UISwipeGestureRecognizer *swipeGestureUp;
 @property (nonatomic, strong) UISwipeGestureRecognizer *swipeGestureDown;
+@property (nonatomic, strong) UISwipeGestureRecognizer *swipeGestureTwoFingersRight;
 
 @property (nonatomic, strong) UIView *gestureView;
 
@@ -171,6 +172,11 @@
     self.swipeGestureDown.direction = UISwipeGestureRecognizerDirectionDown;
     [self.gestureView addGestureRecognizer:self.swipeGestureDown];
     
+    self.swipeGestureTwoFingersRight = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(handleTwoFingersRight:)];
+    self.swipeGestureTwoFingersRight.direction = UISwipeGestureRecognizerDirectionRight;
+    self.swipeGestureTwoFingersRight.numberOfTouchesRequired = 2;
+    [self.gestureView addGestureRecognizer:self.swipeGestureTwoFingersRight];
+    
     [self.view addSubview:self.gestureView];
     [self.view bringSubviewToFront:self.gestureView];
 }
@@ -196,11 +202,12 @@
 
 - (void)handleSwipeLeft:(UISwipeGestureRecognizer *)gesture
 {
-    if (gesture.numberOfTouches == 1) {
-        [self.client.xbmcQueue enqueue:[NSNumber numberWithInteger:SWIPE_LEFT]];
-    } else if (gesture.numberOfTouches == 2) {
-        [self.client.xbmcQueue enqueue:[NSNumber numberWithInteger:BACK]];
-    }
+    [self.client.xbmcQueue enqueue:[NSNumber numberWithInteger:SWIPE_LEFT]];
+}
+
+- (void)handleTwoFingersRight:(UISwipeGestureRecognizer *)gestuire
+{
+    [self.client.xbmcQueue enqueue:[NSNumber numberWithInteger:BACK]];
 }
 
 - (void)handleSwipeRight:(UISwipeGestureRecognizer *)gesture
