@@ -125,17 +125,29 @@
 - (void)loadXBMCViewController
 {
     self.gestureView = [[UIView alloc] initWithFrame:self.view.bounds];
-    self.gestureView.backgroundColor = [UIColor whiteColor];
+    self.gestureView.backgroundColor = [UIColor blackColor];
     
-    UIImageView *xbmcLogo = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"XBMC_Logo"]];
-    [xbmcLogo setCenter:CGPointMake(self.gestureView.bounds.size.width/2, self.gestureView.bounds.size.height/2)];
+    UIImageView *dimensionsLogo = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"controllerModeLogo"]];
+    [dimensionsLogo setCenter:CGPointMake(self.gestureView.bounds.size.width/2, self.gestureView.bounds.origin.y + 100)];
     
-    [self.gestureView addSubview:xbmcLogo];
+    [self.gestureView addSubview:dimensionsLogo];
+   
+    UILabel *dimensionsLabel = [[UILabel alloc] init];
+    dimensionsLabel.frame = CGRectMake(0, 0, 300, 100);
+    dimensionsLabel.center = CGPointMake(self.gestureView.bounds.size.width/2, self.gestureView.bounds.origin.y + 250);
+    dimensionsLabel.textColor = [UIColor colorWithRed:233.0f/255.0f green:233.0f/255.0f blue:233.0f/255.0f alpha:1.0f];
+    dimensionsLabel.font = [UIFont fontWithName:@"MalayalamSangamMN" size:18.0];
+    dimensionsLabel.text = @"DIMENSIONS MASTER MODE";
+    dimensionsLabel.textAlignment = NSTextAlignmentCenter;
     
-    UIImageView *swipeLeftLogo = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"Swipe"]];
-    [swipeLeftLogo setCenter:CGPointMake(self.gestureView.bounds.size.width/2, self.gestureView.bounds.size.height - 25)];
+    [self.gestureView addSubview:dimensionsLabel];
     
-    [self.gestureView addSubview:swipeLeftLogo];
+    UIButton *infoButton = [UIButton buttonWithType:UIButtonTypeInfoLight];
+    infoButton.frame = CGRectMake(self.gestureView.bounds.size.width - 44, self.gestureView.bounds.size.height - 44, 44, 44);
+    infoButton.tintColor = [UIColor whiteColor];
+    [infoButton addTarget:self action:@selector(showHelpController) forControlEvents:UIControlEventTouchUpInside];
+    
+    [self.gestureView addSubview:infoButton];
     
     // Add tap
     self.tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
@@ -166,6 +178,13 @@
 - (void)dismissXBMCViewController
 {
     [self.gestureView removeFromSuperview];
+}
+
+#pragma mark - Show Help Controller
+
+- (void)showHelpController
+{
+    [self performSegueWithIdentifier:@"showHelp" sender:self];
 }
 
 #pragma mark - Handle Gestures
