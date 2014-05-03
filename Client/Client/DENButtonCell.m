@@ -8,6 +8,8 @@
 
 #import "DENButtonCell.h"
 
+@import QuartzCore;
+
 @implementation DENButtonCell
 
 - (id)initWithFrame:(CGRect)frame
@@ -30,7 +32,10 @@
 
 - (void)setImagesForIndexPath:(NSIndexPath *)indexPath;
 {
-    // Normal Images
+    self.cellButton.backgroundColor = [UIColor whiteColor];
+    self.cellButton.titleLabel.textColor = [UIColor blackColor];
+    
+    /*// Normal Images
     NSArray *images = @[[UIImage imageNamed:@"button_dark_blue"], [UIImage imageNamed:@"button_green"], [UIImage imageNamed:@"button_light_blue"], [UIImage imageNamed:@"button_orange"], [UIImage imageNamed:@"button_red"], [UIImage imageNamed:@"button_yellow"]];
     
     // Pressed images
@@ -39,7 +44,7 @@
     unsigned long index = indexPath.item % images.count;
     
     [self.cellButton setBackgroundImage:images[index] forState:UIControlStateNormal];
-    [self.cellButton setBackgroundImage:pressedImages[index] forState:UIControlStateHighlighted];
+    [self.cellButton setBackgroundImage:pressedImages[index] forState:UIControlStateHighlighted];*/
 }
 
 @end

@@ -11,7 +11,7 @@
 		A209E98B18B0EDD700DA0A13 /* NSMutableArray+Queue.m in Sources */ = {isa = PBXBuildFile; fileRef = A209E98A18B0EDD700DA0A13 /* NSMutableArray+Queue.m */; };
 		A22CA57518D0669500426B7A /* DENButtonManager.m in Sources */ = {isa = PBXBuildFile; fileRef = A22CA57418D0669500426B7A /* DENButtonManager.m */; };
 		A22CA57918D068BA00426B7A /* DENButtonCell.m in Sources */ = {isa = PBXBuildFile; fileRef = A22CA57818D068BA00426B7A /* DENButtonCell.m */; };
-		A22CA57C18D06A8C00426B7A /* DENButtonFlowLayout.m in Sources */ = {isa = PBXBuildFile; fileRef = A22CA57B18D06A8C00426B7A /* DENButtonFlowLayout.m */; };
+		A22CA57C18D06A8C00426B7A /* DENButtonLayout.m in Sources */ = {isa = PBXBuildFile; fileRef = A22CA57B18D06A8C00426B7A /* DENButtonLayout.m */; };
 		A22CA57F18D0717700426B7A /* DENButton.m in Sources */ = {isa = PBXBuildFile; fileRef = A22CA57E18D0717700426B7A /* DENButton.m */; };
 		A237D90618FC3758008EC9EC /* DENMediaManager.m in Sources */ = {isa = PBXBuildFile; fileRef = A237D90518FC3758008EC9EC /* DENMediaManager.m */; };
 		A237D90C18FF23BD008EC9EC /* DENNoWifiViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A237D90B18FF23BD008EC9EC /* DENNoWifiViewController.m */; };
@@ -55,8 +55,8 @@
 		A22CA57418D0669500426B7A /* DENButtonManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DENButtonManager.m; sourceTree = "<group>"; };
 		A22CA57718D068BA00426B7A /* DENButtonCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DENButtonCell.h; sourceTree = "<group>"; };
 		A22CA57818D068BA00426B7A /* DENButtonCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DENButtonCell.m; sourceTree = "<group>"; };
-		A22CA57A18D06A8C00426B7A /* DENButtonFlowLayout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DENButtonFlowLayout.h; sourceTree = "<group>"; };
-		A22CA57B18D06A8C00426B7A /* DENButtonFlowLayout.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DENButtonFlowLayout.m; sourceTree = "<group>"; };
+		A22CA57A18D06A8C00426B7A /* DENButtonLayout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DENButtonLayout.h; sourceTree = "<group>"; };
+		A22CA57B18D06A8C00426B7A /* DENButtonLayout.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DENButtonLayout.m; sourceTree = "<group>"; };
 		A22CA57D18D0717700426B7A /* DENButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DENButton.h; sourceTree = "<group>"; };
 		A22CA57E18D0717700426B7A /* DENButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DENButton.m; sourceTree = "<group>"; };
 		A237D90418FC3758008EC9EC /* DENMediaManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DENMediaManager.h; sourceTree = "<group>"; };
@@ -173,8 +173,8 @@
 				A22CA57818D068BA00426B7A /* DENButtonCell.m */,
 				A237D91018FF3519008EC9EC /* DENFakeButtonCell.h */,
 				A237D91118FF3519008EC9EC /* DENFakeButtonCell.m */,
-				A22CA57A18D06A8C00426B7A /* DENButtonFlowLayout.h */,
-				A22CA57B18D06A8C00426B7A /* DENButtonFlowLayout.m */,
+				A22CA57A18D06A8C00426B7A /* DENButtonLayout.h */,
+				A22CA57B18D06A8C00426B7A /* DENButtonLayout.m */,
 			);
 			name = View;
 			sourceTree = "<group>";
@@ -394,7 +394,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A22CA57C18D06A8C00426B7A /* DENButtonFlowLayout.m in Sources */,
+				A22CA57C18D06A8C00426B7A /* DENButtonLayout.m in Sources */,
 				A237D90618FC3758008EC9EC /* DENMediaManager.m in Sources */,
 				A237D91218FF3519008EC9EC /* DENFakeButtonCell.m in Sources */,
 				A22CA57518D0669500426B7A /* DENButtonManager.m in Sources */,

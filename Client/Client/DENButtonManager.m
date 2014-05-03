@@ -10,6 +10,7 @@
 #import "DENButtonCell.h"
 #import "DENFakeButtonCell.h"
 #import "DENButton.h"
+#import "DENButtonLayout.h"
 
 @interface DENButtonManager ()
 
@@ -26,6 +27,9 @@
     if (self = [super init]) {
         _buttons = [NSMutableDictionary new];
         _pressedButtons = [NSMutableDictionary new];
+        
+        [_collectionView registerClass:[DENButtonCell class] forCellWithReuseIdentifier:@"BUTTON_CELL"];
+        [_collectionView registerClass:[DENFakeButtonCell class] forCellWithReuseIdentifier:@"FAKE_BUTTON_CELL"];
     }
     return self;
 }
@@ -36,6 +40,12 @@
     self.columns = [[buttonData objectForKey:@"Width"] integerValue];
     self.rows = [[buttonData objectForKey:@"Height"] integerValue];
     
+    if ([self.collectionView.collectionViewLayout isKindOfClass:[DENButtonLayout class]]) {
+        DENButtonLayout *layout = (DENButtonLayout *)self.collectionView.collectionViewLayout;
+        layout.rows = self.rows;
+        layout.columns = self.columns;
+    }
+    
     [buttonData enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
         if ([key isEqualToString:@"Width"] == NO && [key isEqualToString:@"Height"] == NO) {
             NSNumber *buttonID = [NSNumber numberWithInteger:[key integerValue]];
@@ -44,7 +54,7 @@
             [self.pressedButtons setObject:[NSNumber numberWithInteger:RELEASED] forKey:buttonID];
         }
     }];
-    
+        
     [self.collectionView reloadData];
 }
 

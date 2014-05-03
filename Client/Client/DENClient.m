@@ -196,7 +196,6 @@ static NSString * const kSSIDName = @"dd-wrt";
             if (self.handShaked == NO) {
                 [self.networkManager writeData:[DENClient createErrorMessageForCode:DATA_BEFORE_HANDSHAKE]];
             } else {
-                NSLog(@"%@", JSONData);
                 [self sendGameDataForSensors:[JSONData objectForKey:@"Devices"]];
                 [DENClient shouldPlayMusic:[JSONData objectForKey:@"PlaySound"]];
                 [DENClient shouldVibratePhone:[[JSONData objectForKey:@"Vibrate"] unsignedIntegerValue]];

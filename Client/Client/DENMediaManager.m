@@ -149,7 +149,6 @@ typedef NS_ENUM(NSInteger, Media_Type) {
     
     [file writeToFile:filePath atomically:YES];
     
-    NSLog(@"Saving file to %@", filePath);
     
     // Make sure we don't back this up to iCloud
     NSError *error = nil;
