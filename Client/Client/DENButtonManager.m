@@ -92,6 +92,11 @@
 {
     self.columns = 0;
     self.rows = 0;
+    if ([self.collectionView.collectionViewLayout isKindOfClass:[DENButtonLayout class]]) {
+        DENButtonLayout *layout = (DENButtonLayout *)self.collectionView.collectionViewLayout;
+        layout.rows = self.rows;
+        layout.columns = self.columns;
+    }
     [self.buttons removeAllObjects];
     [self.pressedButtons removeAllObjects];
     [self.collectionView reloadData];

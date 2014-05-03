@@ -64,6 +64,4 @@ const CGFloat kCellSpacing = 10.0f;
     return self.layout;
 }
 
-
-
 @end

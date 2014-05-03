@@ -238,8 +238,8 @@ static NSString * const kSSIDName = @"dd-wrt";
             
         case GAME_END:
         {
-            self.waitingForGame = YES;
             [self.buttonManager gameEnded];
+            self.waitingForGame = YES;
             [self completeGameEnd];
             break;
         }
