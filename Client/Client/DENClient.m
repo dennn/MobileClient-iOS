@@ -70,9 +70,8 @@ static NSString * const kSSIDName = @"dd-wrt";
         
         _connected = DISCONNECTED;
         
-        dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void){
-            _buttonManager = [DENButtonManager new];
-        });
+        _buttonManager = [DENButtonManager new];
+        
         _mediaManager = [DENMediaManager new];
         _mediaManager.client = self;
         

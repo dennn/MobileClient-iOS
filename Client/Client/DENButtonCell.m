@@ -7,6 +7,7 @@
 //
 
 #import "DENButtonCell.h"
+#import "UIImage+UIColor.h"
 
 @import QuartzCore;
 
@@ -32,19 +33,36 @@
 
 - (void)setImagesForIndexPath:(NSIndexPath *)indexPath;
 {
-    self.cellButton.backgroundColor = [UIColor whiteColor];
-    self.cellButton.titleLabel.textColor = [UIColor blackColor];
+    [self.cellButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [self.cellButton setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
+    [self.cellButton.titleLabel setTextAlignment:NSTextAlignmentCenter];
     
-    /*// Normal Images
-    NSArray *images = @[[UIImage imageNamed:@"button_dark_blue"], [UIImage imageNamed:@"button_green"], [UIImage imageNamed:@"button_light_blue"], [UIImage imageNamed:@"button_orange"], [UIImage imageNamed:@"button_red"], [UIImage imageNamed:@"button_yellow"]];
+    [self.cellButton setBackgroundImage:[UIImage imageWithColor:[UIColor whiteColor]] forState:UIControlStateNormal];
+    [self.cellButton setBackgroundImage:[UIImage imageWithColor:[UIColor colorWithRed:56.0f/255.0f green:58.0f/255.0f blue:63.0f/255.0f alpha:1.0f]] forState:UIControlStateHighlighted];
     
-    // Pressed images
-    NSArray *pressedImages = @[[UIImage imageNamed:@"button_dark_blue_pressed"], [UIImage imageNamed:@"button_green_pressed"], [UIImage imageNamed:@"button_light_blue_pressed"], [UIImage imageNamed:@"button_orange_pressed"], [UIImage imageNamed:@"button_red_pressed"], [UIImage imageNamed:@"button_yellow_pressed"]];
+    self.cellButton.layer.cornerRadius = 40.0f;
+    self.cellButton.layer.borderColor = [UIColor lightGrayColor].CGColor;
+    self.cellButton.layer.borderWidth = 2.0f;
+    self.cellButton.layer.masksToBounds = YES;
     
-    unsigned long index = indexPath.item % images.count;
+    CGFloat inset = self.contentView.frame.size.width * 0.1f;
     
-    [self.cellButton setBackgroundImage:images[index] forState:UIControlStateNormal];
-    [self.cellButton setBackgroundImage:pressedImages[index] forState:UIControlStateHighlighted];*/
+    self.cellButton.frame = CGRectInset(self.contentView.frame, inset, inset);
+    
+    CGRect newFrame;
+    
+    if (self.cellButton.frame.size.width <= self.cellButton.frame.size.height) {
+        newFrame = self.cellButton.frame;
+        newFrame.size.height = self.cellButton.frame.size.width;
+    } else {
+        newFrame = self.cellButton.frame;
+        newFrame.size.width = self.cellButton.frame.size.height;
+    }
+    
+    self.cellButton.frame = newFrame;
+    self.cellButton.center = CGPointMake(self.contentView.frame.size.width/2.0f, self.contentView.frame.size.height/2.0f);
+    
+    
 }
 
 @end

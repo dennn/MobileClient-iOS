@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		3D087FEB432044A4A016185D /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 949D9EE610974E8F93925E4D /* libPods.a */; };
+		A202C7DF191535A8004C923E /* UIImage+UIColor.m in Sources */ = {isa = PBXBuildFile; fileRef = A202C7DE191535A8004C923E /* UIImage+UIColor.m */; };
 		A209E98B18B0EDD700DA0A13 /* NSMutableArray+Queue.m in Sources */ = {isa = PBXBuildFile; fileRef = A209E98A18B0EDD700DA0A13 /* NSMutableArray+Queue.m */; };
 		A22CA57518D0669500426B7A /* DENButtonManager.m in Sources */ = {isa = PBXBuildFile; fileRef = A22CA57418D0669500426B7A /* DENButtonManager.m */; };
 		A22CA57918D068BA00426B7A /* DENButtonCell.m in Sources */ = {isa = PBXBuildFile; fileRef = A22CA57818D068BA00426B7A /* DENButtonCell.m */; };
@@ -49,6 +50,8 @@
 /* Begin PBXFileReference section */
 		1B1339D06AC0403F882C8884 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
 		949D9EE610974E8F93925E4D /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		A202C7DD191535A8004C923E /* UIImage+UIColor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+UIColor.h"; sourceTree = "<group>"; };
+		A202C7DE191535A8004C923E /* UIImage+UIColor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+UIColor.m"; sourceTree = "<group>"; };
 		A209E98918B0EDD700DA0A13 /* NSMutableArray+Queue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableArray+Queue.h"; sourceTree = "<group>"; };
 		A209E98A18B0EDD700DA0A13 /* NSMutableArray+Queue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableArray+Queue.m"; sourceTree = "<group>"; };
 		A22CA57318D0669500426B7A /* DENButtonManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DENButtonManager.h; sourceTree = "<group>"; };
@@ -158,6 +161,8 @@
 		A209E98E18B0F3BB00DA0A13 /* Other */ = {
 			isa = PBXGroup;
 			children = (
+				A202C7DD191535A8004C923E /* UIImage+UIColor.h */,
+				A202C7DE191535A8004C923E /* UIImage+UIColor.m */,
 				A209E98918B0EDD700DA0A13 /* NSMutableArray+Queue.h */,
 				A209E98A18B0EDD700DA0A13 /* NSMutableArray+Queue.m */,
 				A2D850FC1911599E00746B79 /* DENNSUserDefaults.h */,
@@ -405,6 +410,7 @@
 				A2721F1A186CCC5300CE2513 /* DENAppDelegate.m in Sources */,
 				A2721F16186CCC5200CE2513 /* main.m in Sources */,
 				A2AC3858186E0D78006751A9 /* DENSensors.m in Sources */,
+				A202C7DF191535A8004C923E /* UIImage+UIColor.m in Sources */,
 				A2721F20186CCC5300CE2513 /* DENConnectionViewController.m in Sources */,
 				A2756DB218BF8240009010E8 /* DENNetworking.m in Sources */,
 				A22CA57F18D0717700426B7A /* DENButton.m in Sources */,

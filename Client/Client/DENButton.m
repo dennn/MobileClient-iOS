@@ -24,7 +24,6 @@
 
 - (NSIndexPath *)indexPathForColumns:(NSInteger)columns
 {
-    NSLog(@"Index path for x: %i y: %i = %i", self.x, self.y, (self.y * columns) + self.x);
     return [NSIndexPath indexPathForItem:((self.y * columns) + self.x) inSection:0];
 }
 
