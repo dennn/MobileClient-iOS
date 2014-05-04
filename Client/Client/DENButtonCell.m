@@ -60,7 +60,12 @@
     }
     
     self.cellButton.frame = newFrame;
-    self.cellButton.layer.cornerRadius = self.cellButton.frame.size.width/2;
+   // self.cellButton.layer.cornerRadius = self.cellButton.frame.size.width/2;
+    self.cellButton.layer.cornerRadius = 15.0f;
+    self.cellButton.titleLabel.frame = self.cellButton.frame;
+    [self.cellButton.titleLabel setAdjustsFontSizeToFitWidth:YES];
+    [self.cellButton.titleLabel sizeToFit];
+
     self.cellButton.center = CGPointMake(self.contentView.frame.size.width/2.0f, self.contentView.frame.size.height/2.0f);
     
     

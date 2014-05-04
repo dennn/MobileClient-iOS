@@ -12,7 +12,7 @@
 
 #import <UIAlertView+Blocks.h>
 
-@interface DENConnectionViewController () <DENClientProtocol, UIAlertViewDelegate>
+@interface DENConnectionViewController () <DENClientProtocol, UIAlertViewDelegate, UITextFieldDelegate>
 
 @property (nonatomic, strong) NSMutableArray *services;
 
@@ -136,6 +136,8 @@
                                            otherButtonTitles:@"OK", nil];
         
         av.alertViewStyle = UIAlertViewStylePlainTextInput;
+        [av textFieldAtIndex:0].tag = 53;
+        [av textFieldAtIndex:0].delegate = self;
         av.tapBlock = ^(UIAlertView *alertView, NSInteger buttonIndex) {
             if (buttonIndex == alertView.firstOtherButtonIndex) {
                 defaults.userName = [[alertView textFieldAtIndex:0] text];
@@ -152,6 +154,15 @@
     }
     
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
+{
+    if (textField.tag == 53) {
+        return ( range.location < 10 );
+    } else {
+        return YES;
+    }
 }
 
 
