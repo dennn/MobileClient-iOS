@@ -128,30 +128,28 @@
 {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
-    if (defaults.userName == nil) {
-        UIAlertView *av = [[UIAlertView alloc] initWithTitle:@"Enter user name"
-                                                     message:@"Please enter your in game display name"
-                                                    delegate:nil
-                                           cancelButtonTitle:@"Cancel"
-                                           otherButtonTitles:@"OK", nil];
+    UIAlertView *av = [[UIAlertView alloc] initWithTitle:@"Enter user name"
+                                                 message:@"Please enter your in game display name"
+                                                delegate:nil
+                                        cancelButtonTitle:@"Cancel"
+                                        otherButtonTitles:@"OK", nil];
         
-        av.alertViewStyle = UIAlertViewStylePlainTextInput;
-        [av textFieldAtIndex:0].tag = 53;
-        [av textFieldAtIndex:0].delegate = self;
-        av.tapBlock = ^(UIAlertView *alertView, NSInteger buttonIndex) {
-            if (buttonIndex == alertView.firstOtherButtonIndex) {
-                defaults.userName = [[alertView textFieldAtIndex:0] text];
-                [defaults synchronize];
-                NSNetService *service = [self.services objectAtIndex:indexPath.row];
-                [self.client connectToService:service];
-            }
-        };
-        
-        [av show];
-    } else {
-        NSNetService *service = [self.services objectAtIndex:indexPath.row];
-        [self.client connectToService:service];
+    av.alertViewStyle = UIAlertViewStylePlainTextInput;
+    [av textFieldAtIndex:0].tag = 53;
+    if (defaults.userName) {
+        [av textFieldAtIndex:0].text = defaults.userName;
     }
+    [av textFieldAtIndex:0].delegate = self;
+    av.tapBlock = ^(UIAlertView *alertView, NSInteger buttonIndex) {
+        if (buttonIndex == alertView.firstOtherButtonIndex) {
+            defaults.userName = [[alertView textFieldAtIndex:0] text];
+            [defaults synchronize];
+            NSNetService *service = [self.services objectAtIndex:indexPath.row];
+            [self.client connectToService:service];
+        }
+    };
+        
+    [av show];
     
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
