@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>FD80C0C0-378C-4935-B667-CB1BB3B02F79</string>
+	<key>IDESourceControlProjectName</key>
+	<string>Client</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>97EE7AE7-362E-4EA8-94FA-4059FB0D375F</key>
+		<string>https://github.com/dennn/MobileClient-iOS.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>Client/Client.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>97EE7AE7-362E-4EA8-94FA-4059FB0D375F</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/dennn/MobileClient-iOS.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>97EE7AE7-362E-4EA8-94FA-4059FB0D375F</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>97EE7AE7-362E-4EA8-94FA-4059FB0D375F</string>
+			<key>IDESourceControlWCCName</key>
+			<string>Mobile Client (iOS)</string>
+		</dict>
+	</array>
+</dict>
+</plist>

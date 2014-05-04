@@ -7,34 +7,69 @@
 //
 
 #import "DENClient.h"
+#import "DENSensors.h"
+#import "DENButtonManager.h"
+#import "DENMediaManager.h"
+#import "NSMutableArray+Queue.h"
+#import "DENButtonViewController.h"
 
-NS_ENUM(NSInteger, serverRequests) {
-    NULL_REQUEST,
-    HANDSHAKE,
-    GAME_DATA
-};
+#import <TargetConditionals.h>
 
-@interface DENClient () <NSStreamDelegate>
+@import SystemConfiguration.CaptiveNetwork;
+@import AudioToolbox;
 
-@property (nonatomic, strong) NSInputStream *inputStream;
-@property (nonatomic, strong) NSOutputStream *outputStream;
-@property (nonatomic, strong) NSString *host;
-@property (nonatomic, assign) UInt32 port;
+static NSString * const kSSIDName = @"dd-wrt";
+
+@interface DENClient () <DENNetworkingProtocol>
+
+// Socket details
+@property (nonatomic, strong) NSString *username;
+// Networking
+@property (nonatomic, strong) DENNetworking *networkManager;
+// Media and sensors
+@property (nonatomic, strong) DENMediaManager *mediaManager;
+@property (nonatomic, strong) DENSensors *sensorManager;
+
+// States
 @property BOOL handShaked;
-
-- (void)completeHandshake;
 
 @end
 
 @implementation DENClient
 
+#pragma mark - Initialization
+
++ (instancetype)sharedManager {
+    static DENClient *staticInstance = nil;
+    if (!staticInstance) {
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            staticInstance = [[DENClient alloc] init];
+        });
+    }
+    
+    return staticInstance;
+}
+
 - (instancetype)init
 {
     if (self = [super init]) {
-        self.connected = FALSE;
-        self.host = @"192.168.0.7";
-        self.port = 8080;
-        self.handShaked = FALSE;
+        _username = @"Guest_iOS";
+        _handShaked = NO;
+
+        _sensorManager = [DENSensors new];
+        
+        // Specify whether to use raw sockets, or GCDAsyncSocket
+        _networkManager = [DENNetworking new];
+        _networkManager.delegate = self;
+        
+        _connected = DISCONNECTED;
+
+        _buttonManager = [DENButtonManager new];
+        _mediaManager = [DENMediaManager new];
+        _mediaManager.client = self;
+        
+        _xbmcQueue = [NSMutableArray new];
     }
     
     return self;
@@ -44,134 +79,409 @@ NS_ENUM(NSInteger, serverRequests) {
 
 - (void)connect
 {
-    if (self.connected == NO) {
-        CFReadStreamRef readStream;
-        CFWriteStreamRef writeStream;
-        CFStreamCreatePairWithSocketToHost(NULL, (__bridge CFStringRef)self.host, self.port, &readStream, &writeStream);
-        self.inputStream = (__bridge_transfer NSInputStream *)readStream;
-        self.outputStream = (__bridge_transfer NSOutputStream *)writeStream;
-        self.inputStream.delegate = self;
-        self.outputStream.delegate = self;
-        [self.inputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-        [self.outputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-        [self.inputStream open];
-        [self.outputStream open];
-    } else {
-        NSLog(@"ERROR: Server is already connected, we should never reach here");
-    }
+    [self.networkManager connect];
+    self.connected = CONNECTING;
 }
 
 - (void)connectWithHost:(NSString *)host andPort:(uint16_t)port
 {
-    self.host = host;
-    self.port = port;
-    [self connect];
+    [self.networkManager connectWithHost:host andPort:port];
+}
+
+- (void)didConnect
+{
+    self.connected = CONNECTED;
 }
 
 - (void)disconnect
 {
-    [self.inputStream close];
-    [self.outputStream close];
-    [self.outputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-    [self.inputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-    
-    self.connected = NO;
+    [self.networkManager disconnect];
 }
 
-#pragma mark - NSStream Delegate
-
-- (void)stream:(NSStream *)aStream handleEvent:(NSStreamEvent)eventCode
+- (void)willDisconnect
 {
-    switch (eventCode) {
-        case NSStreamEventOpenCompleted:
+    self.handShaked = NO;
+    self.connected = DISCONNECTED;
+}
+
+- (void)didFindServices:(NSMutableArray *)services
+{
+    if ([self.delegate respondsToSelector:@selector(didFindServices:)]) {
+        [self.delegate didFindServices:services];
+    }
+}
+
+- (void)connectToService:(NSNetService *)service
+{
+    [self.networkManager connectToService:service];
+}
+
+- (void)searchForServices
+{
+    [self.networkManager searchForServices];
+}
+
+- (void)didFailToConnect
+{
+    if ([self.delegate respondsToSelector:@selector(didFailToConnect)]) {
+        [self.delegate didFailToConnect];
+    }
+}
+
++ (BOOL)isOnCorrectWiFi
+{
+    // Does not work on the simulator.
+    NSString *ssid = nil;
+    NSArray *ifs = (__bridge_transfer id)CNCopySupportedInterfaces();
+    for (NSString *ifnam in ifs) {
+        NSDictionary *info = (__bridge_transfer id)CNCopyCurrentNetworkInfo((__bridge CFStringRef)ifnam);
+        if (info[@"SSID"]) {
+            ssid = info[@"SSID"];
+        }
+    }
+        
+    // We can't get the SSID using Simulator
+    
+#if TARGET_IPHONE_SIMULATOR
+    return YES;
+#else
+    if ([ssid isEqualToString:kSSIDName]) {
+        return YES;
+    } else {
+        return NO;
+    }
+#endif
+    
+}
+
+#pragma mark - Server event handling
+
+- (void)didReadServerRequest:(NSInteger)requestType withData:(NSDictionary *)JSONData
+{
+    switch (requestType) {
+        case NULL_REQUEST:
         {
-            NSLog(@"Stream opened");
-            self.connected = YES;
+            [self.networkManager writeData:[DENClient createErrorMessageForCode:INVALID_REQUEST_TYPE]];
             break;
         }
             
-        case NSStreamEventEndEncountered:
+        case HANDSHAKE:
         {
-            NSLog(@"Stream ended");
+            if (self.handShaked == NO) {
+                [self completeHandshake];
+            } else {
+                [self.networkManager writeData:[DENClient createErrorMessageForCode:HANDSHAKE_AFTER_HANDSHAKE]];
+            }
+            break;
+        }
+            
+        case GAME_DATA:
+        {
+            if (self.handShaked == NO) {
+                [self.networkManager writeData:[DENClient createErrorMessageForCode:DATA_BEFORE_HANDSHAKE]];
+            } else {
+                [self sendGameDataForSensors:[JSONData objectForKey:@"Devices"]];
+                [DENClient shouldPlayMusic:[JSONData objectForKey:@"PlaySound"]];
+                [DENClient shouldVibratePhone:[[JSONData objectForKey:@"Vibrate"] unsignedIntegerValue]];
+                
+                if ([self.delegate respondsToSelector:@selector(shouldSetBackground:)]) {
+                    [self.delegate shouldSetBackground:[JSONData objectForKey:@"SetBackground"]];
+                }
+            }
+            break;
+        }
+            
+        case DISCONNECT:
+        {
             [self disconnect];
             break;
         }
             
-        case NSStreamEventErrorOccurred:
-            NSLog(@"Couldn't connect to host");
-            break;
-            
-        case NSStreamEventHasBytesAvailable:
+        case GAME_START:
         {
-            if (aStream == self.inputStream) {
-                [self handleDataRead];
+            [self.buttonManager processGameData:[JSONData objectForKey:@"Buttons"]];
+            [self.mediaManager processMediaData:[JSONData objectForKey:@"Media"]];
+            break;
+        }
+            
+        case GAME_END:
+        {
+            [self completeGameEnd];
+            break;
+        }
+            
+        case XBMC_START:
+        {
+            if (self.buttonViewController) {
+                [self.buttonViewController loadXBMCViewController];
+                [self completeXBMCStart];
             }
+            break;
+        }
+            
+        case XBMC_END:
+        {
+            [self.buttonViewController dismissXBMCViewController];
+            [self completeXBMCEnd];
+            break;
+        }
+            
+        case XBMC_REQUEST:
+        {
+            [self sendXBMCRequest];
+            break;
+        }
+            
+        case PULSE:
+        {
+            [self completePulse];
             break;
         }
             
         default:
-            NSLog(@"Unhandled event");
+        {
+            [self.networkManager writeData:[DENClient createErrorMessageForCode:INVALID_REQUEST_TYPE]];
+        }
     }
 }
 
-#pragma mark - JSON Parsing and writing
-
-- (void)handleDataRead
+- (void)startDownloadingFile:(NSString *)fileName withSize:(NSUInteger)size
 {
-    uint8_t buffer[1024];
-    NSInteger len;
+    self.networkManager.downloadingFiles = YES;
     
-    while ([self.inputStream hasBytesAvailable]) {
-        len = [self.inputStream read:buffer maxLength:sizeof(buffer)];
-        if (len > 0) {
-            NSString *stringInput = [[NSString alloc] initWithBytes:buffer length:sizeof(buffer) encoding:NSASCIIStringEncoding];
-            if (stringInput != nil) {
-                NSError *error;
-                /* We need to convert from ASCII to UTF-8 (which is const char *) and then back to an NSString. This is because NSJSONSerialization
-                 only takes UTF */
-                stringInput = [stringInput stringByTrimmingCharactersInSet:[NSCharacterSet controlCharacterSet]];
-                NSString *utfString = [NSString stringWithUTF8String:[stringInput UTF8String]];
-                NSDictionary *JSONOutput = [NSJSONSerialization JSONObjectWithData:[utfString dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingAllowFragments error:&error];
-                if (error) {
-                    NSLog(@"Error parsing JSON %@", [error debugDescription]);
-                } else {
-                   // NSLog(@"Output: %@", JSONOutput);
-                    NSNumber *requestType = [JSONOutput objectForKey:@"Request_type"];
-                    switch ([requestType integerValue]) {
-                        case NULL_REQUEST:
-                            break;
-                            
-                        case HANDSHAKE:
-                        {
-                            if (self.handShaked == NO) {
-                                [self completeHandshake];
-                            } else {
-                                NSLog(@"Received duplicate handshake request, ignoring");
-                            }
-                            break;
-                        }
-                            
-                        case GAME_DATA:
-                            break;
-                            
-                        default:
-                            NSLog(@"Unrecognized request type");
-                    }
-                }
-            }
-        }
+    NSDictionary *response = @{@"Name": fileName};
+    NSError *error;
+    NSData *data = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];
+    
+    if (error) {
+        NSLog(@"Error creating JSON while completing game start");
+    } else {
+        [self.networkManager startDownloadingFile:data ofSize:size];
+    }
+}
+
+- (void)completedDownloadingMedia
+{
+    self.networkManager.downloadingFiles = NO;
+    [self.networkManager restartListening];
+    [self completeGameStart];
+}
+
+- (void)didDownloadFile:(NSData *)file {
+    [self.mediaManager downloadedFile:file];
+}
+
+#pragma mark - Server requests
+
+- (void)completeGameStart
+{
+    NSDictionary *response = @{@"Response": @1};
+    NSError *error;
+    NSData *data = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];
+    
+    if (error) {
+        NSLog(@"Error creating JSON while completing game start");
+    } else {
+        [self.networkManager writeData:data];
     }
 }
 
 - (void)completeHandshake
 {
+    NSDictionary *response = @{@"Response": @1, @"Username": self.username};
+    NSError *error;
+    NSData *data = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];
+    
+    if (error) {
+        NSLog(@"Error creating JSON while completing handshake");
+    } else {
+        [self.networkManager writeData:data];
+        self.handShaked = YES;
+    }
+}
+
+- (void)completeGameEnd
+{
     NSDictionary *response = @{@"Response": @1};
     NSError *error;
     NSData *data = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];
-    NSString *utfString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-    NSData *asciiData = [utfString dataUsingEncoding:NSASCIIStringEncoding];
     
-    [self.outputStream write:[asciiData bytes] maxLength:[asciiData length]];
+    if (error) {
+        NSLog(@"Error creating JSON while completing game end");
+    } else {
+        [self.networkManager writeData:data];
+    }
+}
+
+- (void)sendGameDataForSensors:(NSMutableArray *)sensors
+{
+    NSDictionary *response;
+    NSMutableDictionary *deviceDictionary = [NSMutableDictionary new];
+    NSError *error;
+
+    for (NSInteger i=0; i < [sensors count]; i++) {
+        NSInteger sensorValue = [[sensors objectAtIndex:i] integerValue];
+        SensorType sensor = [DENSensors getSensorForID:sensorValue];
+        NSDictionary *sensorData;
+        if (sensor == BUTTONS) {
+            sensorData = [self.buttonManager getButtonDataForID:sensorValue];
+        } else {
+            sensorData = [self.sensorManager getSensorDataForSensor:sensorValue];
+        }
+        [deviceDictionary setObject:sensorData forKey:[NSString stringWithFormat:@"%li", (long)sensorValue]];
+    }
+    
+    response = @{@"Devices": deviceDictionary};
+            
+    NSData *data = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];
+    if (error) {
+        NSLog(@"Error creating JSON while sending data");
+    } else {
+        [self.networkManager writeData:data];
+    }
+}
+
+- (void)completeXBMCStart
+{
+    NSDictionary *response = @{@"Response": @1};
+    NSError *error;
+    NSData *data = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];
+    
+    if (error) {
+        NSLog(@"Error creating JSON while completing game end");
+    } else {
+        [self.networkManager writeData:data];
+    }
+}
+
+- (void)completeXBMCEnd
+{
+    NSDictionary *response = @{@"Response": @1};
+    NSError *error;
+    NSData *data = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];
+    
+    if (error) {
+        NSLog(@"Error creating JSON while completing game end");
+    } else {
+        [self.networkManager writeData:data];
+    }
+}
+
+- (void)completePulse
+{
+    NSDictionary *response = @{@"Response": @1};
+    NSError *error;
+    NSData *data = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];
+    
+    if (error) {
+        NSLog(@"Error creating JSON while completing game end");
+    } else {
+        [self.networkManager writeData:data];
+    }
+}
+
+- (void)sendXBMCRequest
+{
+    NSDictionary *response;
+    
+    if ([self.xbmcQueue isEmpty] == NO) {
+        response = @{@"Event": [self.xbmcQueue dequeue]};
+    } else {
+        response = @{@"Event": [NSNumber numberWithInteger:NO_EVENT]};
+    }
+    
+    NSError *error;
+    NSData *data = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];
+    
+    if (error) {
+        NSLog(@"Error creating JSON while completing game end");
+    } else {
+        [self.networkManager writeData:data];
+    }
+}
+
+#pragma mark - Errors
+
+//TODO: Look at using NSError instead, because its native blablabla...
+
+/*
+ * Return the JSON message as an NSData object so that we can send it along the stream
+ * socket.
+ */
++ (NSData *)createErrorMessageForCode:(Error)errorCode
+{
+    NSString *errorMessage = [DENClient getErrorMessageForCode:errorCode];
+    NSLog(@"ERROR: %@", errorMessage);
+    if (errorMessage == nil) {
+        return nil;
+    }
+    
+    NSDictionary *errorResponse = @{@"ErrorCode": @(errorCode),
+                                    @"Error": errorMessage};
+    NSError *error;
+    
+    NSData *data = [NSJSONSerialization dataWithJSONObject:errorResponse options:kNilOptions error:&error];
+
+    if (error) {
+        NSLog(@"Error creating JSON while creating error");
+    } else {
+        return data;
+    }
+    
+    return nil;
+}
+
+/* 
+ * Given an error code value, return a human readable description of it
+ */
++ (NSString *)getErrorMessageForCode:(Error)errorCode
+{
+    switch (errorCode) {
+        case DESERIALIZATION_ERROR:
+            return @"Request could not be deserialized";
+            
+        case DATA_BEFORE_HANDSHAKE:
+            return @"Data received before handshake";
+            
+        case HANDSHAKE_AFTER_HANDSHAKE:
+            return @"Handshake received after handshake";
+            
+        case INVALID_DEVICE_CODE:
+            return @"Invalid device code";
+            
+        case INVALID_REQUEST_TYPE:
+            return @"Invalid request type";
+            
+        case DEVICE_UNAVAILABLE:
+            return @"Device unavailable";
+    }
+    
+    return nil;
+}
+
+#pragma mark - Media playing
+
++ (void)shouldPlayMusic:(NSString *)song
+{
+    if (song) {
+        NSURL *songURL = [DENMediaManager getAudioFileWithFileName:song];
+        
+        if (songURL) {
+            SystemSoundID sound;
+            AudioServicesCreateSystemSoundID((__bridge CFURLRef)songURL, &sound);
+            AudioServicesPlaySystemSound(sound);
+        }
+    }
+}
+
++ (void)shouldVibratePhone:(NSUInteger)duration
+{
+    //There's no way to change the duration of a vibration in iOS,
+    //for now we should ignore the milliseconds and just play a single
+    //vibration of duration 0.5s
+    if (duration != 0) {
+        AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
+    }
 }
 
 @end
