@@ -33,6 +33,7 @@
 
 - (void)setImagesForIndexPath:(NSIndexPath *)indexPath;
 {
+    
     [self.cellButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     [self.cellButton setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
     [self.cellButton.titleLabel setTextAlignment:NSTextAlignmentCenter];
@@ -40,7 +41,6 @@
     [self.cellButton setBackgroundImage:[UIImage imageWithColor:[UIColor whiteColor]] forState:UIControlStateNormal];
     [self.cellButton setBackgroundImage:[UIImage imageWithColor:[UIColor colorWithRed:56.0f/255.0f green:58.0f/255.0f blue:63.0f/255.0f alpha:1.0f]] forState:UIControlStateHighlighted];
     
-    self.cellButton.layer.cornerRadius = 40.0f;
     self.cellButton.layer.borderColor = [UIColor lightGrayColor].CGColor;
     self.cellButton.layer.borderWidth = 2.0f;
     self.cellButton.layer.masksToBounds = YES;
@@ -60,6 +60,7 @@
     }
     
     self.cellButton.frame = newFrame;
+    self.cellButton.layer.cornerRadius = self.cellButton.frame.size.width/2;
     self.cellButton.center = CGPointMake(self.contentView.frame.size.width/2.0f, self.contentView.frame.size.height/2.0f);
     
     

@@ -14,6 +14,7 @@
 		A22CA57918D068BA00426B7A /* DENButtonCell.m in Sources */ = {isa = PBXBuildFile; fileRef = A22CA57818D068BA00426B7A /* DENButtonCell.m */; };
 		A22CA57C18D06A8C00426B7A /* DENButtonLayout.m in Sources */ = {isa = PBXBuildFile; fileRef = A22CA57B18D06A8C00426B7A /* DENButtonLayout.m */; };
 		A22CA57F18D0717700426B7A /* DENButton.m in Sources */ = {isa = PBXBuildFile; fileRef = A22CA57E18D0717700426B7A /* DENButton.m */; };
+		A234D0E119165C8700A74802 /* Main_iPad.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A234D0DF19165C8700A74802 /* Main_iPad.storyboard */; };
 		A237D90618FC3758008EC9EC /* DENMediaManager.m in Sources */ = {isa = PBXBuildFile; fileRef = A237D90518FC3758008EC9EC /* DENMediaManager.m */; };
 		A237D90C18FF23BD008EC9EC /* DENNoWifiViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A237D90B18FF23BD008EC9EC /* DENNoWifiViewController.m */; };
 		A237D91218FF3519008EC9EC /* DENFakeButtonCell.m in Sources */ = {isa = PBXBuildFile; fileRef = A237D91118FF3519008EC9EC /* DENFakeButtonCell.m */; };
@@ -62,6 +63,7 @@
 		A22CA57B18D06A8C00426B7A /* DENButtonLayout.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DENButtonLayout.m; sourceTree = "<group>"; };
 		A22CA57D18D0717700426B7A /* DENButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DENButton.h; sourceTree = "<group>"; };
 		A22CA57E18D0717700426B7A /* DENButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DENButton.m; sourceTree = "<group>"; };
+		A234D0E019165C8700A74802 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main_iPad.storyboard; sourceTree = "<group>"; };
 		A237D90418FC3758008EC9EC /* DENMediaManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DENMediaManager.h; sourceTree = "<group>"; };
 		A237D90518FC3758008EC9EC /* DENMediaManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DENMediaManager.m; sourceTree = "<group>"; };
 		A237D90A18FF23BD008EC9EC /* DENNoWifiViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DENNoWifiViewController.h; sourceTree = "<group>"; };
@@ -226,6 +228,7 @@
 				A209E98C18B0F3A000DA0A13 /* Controller */,
 				A209E98E18B0F3BB00DA0A13 /* Other */,
 				A2721F1B186CCC5300CE2513 /* Main.storyboard */,
+				A234D0DF19165C8700A74802 /* Main_iPad.storyboard */,
 				A2721F21186CCC5300CE2513 /* Images.xcassets */,
 				A2721F10186CCC5200CE2513 /* Supporting Files */,
 				A23BFC6E18BF76CE00E8B6A7 /* Podfile */,
@@ -345,6 +348,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A2721F22186CCC5300CE2513 /* Images.xcassets in Resources */,
+				A234D0E119165C8700A74802 /* Main_iPad.storyboard in Resources */,
 				A2721F14186CCC5200CE2513 /* InfoPlist.strings in Resources */,
 				A23BFC6F18BF76CE00E8B6A7 /* Podfile in Resources */,
 				A2721F1D186CCC5300CE2513 /* Main.storyboard in Resources */,
@@ -439,6 +443,14 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
+		A234D0DF19165C8700A74802 /* Main_iPad.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				A234D0E019165C8700A74802 /* Base */,
+			);
+			name = Main_iPad.storyboard;
+			sourceTree = "<group>";
+		};
 		A2721F12186CCC5200CE2513 /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -552,7 +564,7 @@
 				);
 				HEADER_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = "Client/Client-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -562,8 +574,8 @@
 					Security,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "44C59504-2D04-4244-A133-4220B0ED2390";
-				TARGETED_DEVICE_FAMILY = 1;
+				PROVISIONING_PROFILE = "DB46C4C3-0641-4BC4-A2A9-1E6A3B6DAA4C";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "$(inherited)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -581,7 +593,7 @@
 				GCC_PREFIX_HEADER = "Client/Client-Prefix.pch";
 				HEADER_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = "Client/Client-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -592,7 +604,7 @@
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "F9D451E5-DB9A-410B-8A73-0CC90767DCD4";
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "$(inherited)";
 				WRAPPER_EXTENSION = app;
 			};

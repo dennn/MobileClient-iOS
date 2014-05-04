@@ -33,6 +33,11 @@
     self.view.backgroundColor = [UIColor blackColor];
 }
 
+- (BOOL)prefersStatusBarHidden
+{
+    return NO;
+}
+
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];

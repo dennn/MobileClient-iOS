@@ -35,7 +35,11 @@
     UIBarButtonItem *space = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
     
     [self setToolbarItems:@[space, connectButton]];
+}
 
+- (BOOL)prefersStatusBarHidden
+{
+    return NO;
 }
 
 - (void)viewDidAppear:(BOOL)animated

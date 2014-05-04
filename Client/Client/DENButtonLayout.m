@@ -20,8 +20,8 @@ const CGFloat kCellSpacing = 10.0f;
 
 - (CGSize)collectionViewContentSize
 {
-    CGFloat width = self.collectionView.frame.size.width;
-    CGFloat height = self.collectionView.frame.size.height;
+    CGFloat width = self.collectionView.frame.size.width - 20;
+    CGFloat height = self.collectionView.frame.size.height - 20;
     
     CGSize contentSize = CGSizeMake(width, height);
     

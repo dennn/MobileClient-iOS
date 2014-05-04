@@ -62,13 +62,17 @@
                   forKeyPath:NSStringFromSelector(@selector(waitingForGame))
                      options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionInitial
                      context:nil];
-    
 }
 
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+}
+
+- (BOOL)prefersStatusBarHidden
+{
+    return YES;
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -234,9 +238,7 @@
         UIImage *backgroundImage = [DENMediaManager getImageWithFileName:background];
                 
         if (backgroundImage) {
-            [UIView animateWithDuration:0.5f animations:^{
-                self.collectionView.backgroundView = [[UIImageView alloc] initWithImage:backgroundImage];
-            }];
+            self.collectionView.backgroundView = [[UIImageView alloc] initWithImage:backgroundImage];
         }
     }
 }
