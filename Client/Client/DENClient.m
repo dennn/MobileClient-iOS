@@ -13,6 +13,8 @@
 #import "NSMutableArray+Queue.h"
 #import "DENButtonViewController.h"
 
+#import "DENNSUserDefaults.h"
+
 #import <TargetConditionals.h>
 
 @import SystemConfiguration.CaptiveNetwork;
@@ -29,6 +31,9 @@ static NSString * const kSSIDName = @"dd-wrt";
 // Media and sensors
 @property (nonatomic, strong) DENMediaManager *mediaManager;
 @property (nonatomic, strong) DENSensors *sensorManager;
+
+@property (nonatomic, assign) BOOL isGameMaster;
+@property (nonatomic, assign) BOOL shouldSendKillCommand;
 
 // States
 @property BOOL handShaked;
@@ -54,7 +59,7 @@ static NSString * const kSSIDName = @"dd-wrt";
 - (instancetype)init
 {
     if (self = [super init]) {
-        _username = @"Guest_iOS";
+        _username = [NSUserDefaults standardUserDefaults].userName;
         _handShaked = NO;
 
         _sensorManager = [DENSensors new];
@@ -64,10 +69,16 @@ static NSString * const kSSIDName = @"dd-wrt";
         _networkManager.delegate = self;
         
         _connected = DISCONNECTED;
-
+        
         _buttonManager = [DENButtonManager new];
+        
         _mediaManager = [DENMediaManager new];
         _mediaManager.client = self;
+        
+        _waitingForGame = NO;
+        
+        _isGameMaster = NO;
+        _shouldSendKillCommand = NO;
         
         _xbmcQueue = [NSMutableArray new];
     }
@@ -101,6 +112,7 @@ static NSString * const kSSIDName = @"dd-wrt";
 - (void)willDisconnect
 {
     self.handShaked = NO;
+    self.isGameMaster = NO;
     self.connected = DISCONNECTED;
 }
 
@@ -130,6 +142,12 @@ static NSString * const kSSIDName = @"dd-wrt";
 
 + (BOOL)isOnCorrectWiFi
 {
+ 
+    // We can't get the SSID using Simulator
+#if (TARGET_IPHONE_SIMULATOR || DEBUG)
+    return YES;
+    
+#endif
     // Does not work on the simulator.
     NSString *ssid = nil;
     NSArray *ifs = (__bridge_transfer id)CNCopySupportedInterfaces();
@@ -139,18 +157,12 @@ static NSString * const kSSIDName = @"dd-wrt";
             ssid = info[@"SSID"];
         }
     }
-        
-    // We can't get the SSID using Simulator
     
-#if TARGET_IPHONE_SIMULATOR
-    return YES;
-#else
     if ([ssid isEqualToString:kSSIDName]) {
         return YES;
     } else {
         return NO;
     }
-#endif
     
 }
 
@@ -161,12 +173,14 @@ static NSString * const kSSIDName = @"dd-wrt";
     switch (requestType) {
         case NULL_REQUEST:
         {
+            self.waitingForGame = NO;
             [self.networkManager writeData:[DENClient createErrorMessageForCode:INVALID_REQUEST_TYPE]];
             break;
         }
             
         case HANDSHAKE:
         {
+            self.waitingForGame = NO;
             if (self.handShaked == NO) {
                 [self completeHandshake];
             } else {
@@ -177,6 +191,7 @@ static NSString * const kSSIDName = @"dd-wrt";
             
         case GAME_DATA:
         {
+            self.waitingForGame = NO;
             if (self.handShaked == NO) {
                 [self.networkManager writeData:[DENClient createErrorMessageForCode:DATA_BEFORE_HANDSHAKE]];
             } else {
@@ -184,8 +199,23 @@ static NSString * const kSSIDName = @"dd-wrt";
                 [DENClient shouldPlayMusic:[JSONData objectForKey:@"PlaySound"]];
                 [DENClient shouldVibratePhone:[[JSONData objectForKey:@"Vibrate"] unsignedIntegerValue]];
                 
-                if ([self.delegate respondsToSelector:@selector(shouldSetBackground:)]) {
-                    [self.delegate shouldSetBackground:[JSONData objectForKey:@"SetBackground"]];
+                NSNumber *gameMasterValue = [JSONData objectForKey:@"GameMaster"];
+
+                if (gameMasterValue != NULL) {
+                    if ([gameMasterValue integerValue] == 1) {
+                        self.isGameMaster = YES;
+                        if ([self.delegate respondsToSelector:@selector(isGameMaster)]) {
+                            [self.delegate isGameMaster];
+                        }
+                    }
+                }
+                
+                NSString *background = [JSONData objectForKey:@"SetBackground"];
+                
+                if (background != NULL) {
+                    if ([self.delegate respondsToSelector:@selector(shouldSetBackground:)]) {
+                        [self.delegate shouldSetBackground:background];
+                    }
                 }
             }
             break;
@@ -193,12 +223,14 @@ static NSString * const kSSIDName = @"dd-wrt";
             
         case DISCONNECT:
         {
+            self.waitingForGame = NO;
             [self disconnect];
             break;
         }
             
         case GAME_START:
         {
+            self.waitingForGame = NO;
             [self.buttonManager processGameData:[JSONData objectForKey:@"Buttons"]];
             [self.mediaManager processMediaData:[JSONData objectForKey:@"Media"]];
             break;
@@ -206,12 +238,15 @@ static NSString * const kSSIDName = @"dd-wrt";
             
         case GAME_END:
         {
+            [self.buttonManager gameEnded];
+            self.waitingForGame = YES;
             [self completeGameEnd];
             break;
         }
             
         case XBMC_START:
         {
+            self.waitingForGame = NO;
             if (self.buttonViewController) {
                 [self.buttonViewController loadXBMCViewController];
                 [self completeXBMCStart];
@@ -221,6 +256,7 @@ static NSString * const kSSIDName = @"dd-wrt";
             
         case XBMC_END:
         {
+            self.waitingForGame = NO;
             [self.buttonViewController dismissXBMCViewController];
             [self completeXBMCEnd];
             break;
@@ -228,18 +264,21 @@ static NSString * const kSSIDName = @"dd-wrt";
             
         case XBMC_REQUEST:
         {
+            self.waitingForGame = NO;
             [self sendXBMCRequest];
             break;
         }
             
         case PULSE:
         {
+            self.waitingForGame = YES;
             [self completePulse];
             break;
         }
             
         default:
         {
+            self.waitingForGame = NO;
             [self.networkManager writeData:[DENClient createErrorMessageForCode:INVALID_REQUEST_TYPE]];
         }
     }
@@ -264,7 +303,9 @@ static NSString * const kSSIDName = @"dd-wrt";
 {
     self.networkManager.downloadingFiles = NO;
     [self.networkManager restartListening];
-    [self completeGameStart];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self completeGameStart];
+    });
 }
 
 - (void)didDownloadFile:(NSData *)file {
@@ -288,6 +329,9 @@ static NSString * const kSSIDName = @"dd-wrt";
 
 - (void)completeHandshake
 {
+    if (self.username == nil) {
+        self.username = [NSUserDefaults standardUserDefaults].userName;
+    }
     NSDictionary *response = @{@"Response": @1, @"Username": self.username};
     NSError *error;
     NSData *data = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];
@@ -331,8 +375,14 @@ static NSString * const kSSIDName = @"dd-wrt";
         [deviceDictionary setObject:sensorData forKey:[NSString stringWithFormat:@"%li", (long)sensorValue]];
     }
     
-    response = @{@"Devices": deviceDictionary};
-            
+    if (self.shouldSendKillCommand == YES) {
+        response = @{@"Devices": deviceDictionary,
+                     @"GameKill": @1};
+        self.shouldSendKillCommand = NO;
+    } else {
+        response = @{@"Devices": deviceDictionary};
+    }
+    
     NSData *data = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];
     if (error) {
         NSLog(@"Error creating JSON while sending data");
@@ -398,6 +448,11 @@ static NSString * const kSSIDName = @"dd-wrt";
     } else {
         [self.networkManager writeData:data];
     }
+}
+
+- (void)sendKillCommand
+{
+    self.shouldSendKillCommand = YES;
 }
 
 #pragma mark - Errors

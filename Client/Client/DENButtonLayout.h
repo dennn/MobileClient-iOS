@@ -8,6 +8,9 @@
 
 #import <UIKit/UIKit.h>
 
-@interface DENButtonFlowLayout : UICollectionViewFlowLayout
+@interface DENButtonLayout : UICollectionViewLayout
+
+@property (nonatomic, assign) NSInteger rows;
+@property (nonatomic, assign) NSInteger columns;
 
 @end

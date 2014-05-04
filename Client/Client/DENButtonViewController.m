@@ -11,6 +11,9 @@
 #import "DENMediaManager.h"
 #import "NSMutableArray+Queue.h"
 
+#import <SVProgressHUD.h>
+#import <UIActionSheet+Blocks.h>
+
 @import AudioToolbox;
 
 @interface DENButtonViewController ()
@@ -20,6 +23,7 @@
 @property (nonatomic, strong) UISwipeGestureRecognizer *swipeGestureRight;
 @property (nonatomic, strong) UISwipeGestureRecognizer *swipeGestureUp;
 @property (nonatomic, strong) UISwipeGestureRecognizer *swipeGestureDown;
+@property (nonatomic, strong) UISwipeGestureRecognizer *swipeGestureTwoFingersRight;
 
 @property (nonatomic, strong) UIView *gestureView;
 
@@ -42,18 +46,22 @@
 	// Do any additional setup after loading the view.
     self.client = [DENClient sharedManager];
     self.client.buttonViewController = self;
+    self.client.delegate = self;
     self.collectionView.dataSource = self.client.buttonManager;
     self.client.buttonManager.collectionView = self.collectionView;
 }
 
 - (void)viewDidAppear:(BOOL)animated
 {
+    // Observe keys please
     [self.client addObserver:self   
-                  forKeyPath:@"connected"
-                     options: NSKeyValueObservingOptionNew
+                  forKeyPath:NSStringFromSelector(@selector(connected))
+                     options:NSKeyValueObservingOptionNew
                      context:nil];
-    
-    self.client.delegate = self;
+    [self.client addObserver:self
+                  forKeyPath:NSStringFromSelector(@selector(waitingForGame))
+                     options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionInitial
+                     context:nil];
 }
 
 - (void)didReceiveMemoryWarning
@@ -62,9 +70,15 @@
     // Dispose of any resources that can be recreated.
 }
 
+- (BOOL)prefersStatusBarHidden
+{
+    return YES;
+}
+
 - (void)viewWillDisappear:(BOOL)animated
 {
-    [self.client removeObserver:self forKeyPath:@"connected"];
+    [self.client removeObserver:self forKeyPath:NSStringFromSelector(@selector(connected))];
+    [self.client removeObserver:self forKeyPath:NSStringFromSelector(@selector(waitingForGame))];
 }
 
 - (NSUInteger)supportedInterfaceOrientations
@@ -76,9 +90,35 @@
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
-    if ([keyPath isEqualToString:@"connected"] && [object isKindOfClass:[DENClient class]]) {
+    if ([keyPath isEqualToString:NSStringFromSelector(@selector(connected))] && [object isKindOfClass:[DENClient class]]) {
         [self loadConnectionViewController];
+    } else if ([keyPath isEqualToString:NSStringFromSelector(@selector(waitingForGame))] && [object isKindOfClass:[DENClient class]]) {
+        if (self.client.waitingForGame == YES) {
+            [self addWaitingForGame];
+        } else {
+            [self removeWaitingForGame];
+        }
     }
+}
+
+#pragma mark - Waiting For Game
+
+- (void)addWaitingForGame
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if ([SVProgressHUD isVisible] == NO) {
+            [self removeBackground];
+            [SVProgressHUD showWithStatus:@"Waiting for game"];
+
+        }
+    });
+}
+
+- (void)removeWaitingForGame
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [SVProgressHUD dismiss];
+    });
 }
 
 #pragma mark - View Controller Transition
@@ -91,12 +131,29 @@
 - (void)loadXBMCViewController
 {
     self.gestureView = [[UIView alloc] initWithFrame:self.view.bounds];
-    self.gestureView.backgroundColor = [UIColor whiteColor];
+    self.gestureView.backgroundColor = [UIColor blackColor];
     
-    UIImageView *xbmcLogo = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"XBMC_Logo"]];
-    [xbmcLogo setCenter:CGPointMake(self.gestureView.bounds.size.width/2, self.gestureView.bounds.size.height/2)];
+    UIImageView *dimensionsLogo = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"controllerModeLogo"]];
+    [dimensionsLogo setCenter:CGPointMake(self.gestureView.bounds.size.width/2, self.gestureView.bounds.origin.y + 100)];
     
-    [self.gestureView addSubview:xbmcLogo];
+    [self.gestureView addSubview:dimensionsLogo];
+   
+    UILabel *dimensionsLabel = [[UILabel alloc] init];
+    dimensionsLabel.frame = CGRectMake(0, 0, 300, 100);
+    dimensionsLabel.center = CGPointMake(self.gestureView.bounds.size.width/2, self.gestureView.bounds.origin.y + 250);
+    dimensionsLabel.textColor = [UIColor colorWithRed:233.0f/255.0f green:233.0f/255.0f blue:233.0f/255.0f alpha:1.0f];
+    dimensionsLabel.font = [UIFont fontWithName:@"MalayalamSangamMN" size:18.0];
+    dimensionsLabel.text = @"DIMENSIONS MASTER MODE";
+    dimensionsLabel.textAlignment = NSTextAlignmentCenter;
+    
+    [self.gestureView addSubview:dimensionsLabel];
+    
+    UIButton *infoButton = [UIButton buttonWithType:UIButtonTypeInfoLight];
+    infoButton.frame = CGRectMake(self.gestureView.bounds.size.width - 44, self.gestureView.bounds.size.height - 44, 44, 44);
+    infoButton.tintColor = [UIColor whiteColor];
+    [infoButton addTarget:self action:@selector(showHelpController) forControlEvents:UIControlEventTouchUpInside];
+    
+    [self.gestureView addSubview:infoButton];
     
     // Add tap
     self.tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
@@ -120,6 +177,11 @@
     self.swipeGestureDown.direction = UISwipeGestureRecognizerDirectionDown;
     [self.gestureView addGestureRecognizer:self.swipeGestureDown];
     
+    self.swipeGestureTwoFingersRight = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(handleTwoFingersRight:)];
+    self.swipeGestureTwoFingersRight.direction = UISwipeGestureRecognizerDirectionRight;
+    self.swipeGestureTwoFingersRight.numberOfTouchesRequired = 2;
+    [self.gestureView addGestureRecognizer:self.swipeGestureTwoFingersRight];
+    
     [self.view addSubview:self.gestureView];
     [self.view bringSubviewToFront:self.gestureView];
 }
@@ -127,6 +189,13 @@
 - (void)dismissXBMCViewController
 {
     [self.gestureView removeFromSuperview];
+}
+
+#pragma mark - Show Help Controller
+
+- (void)showHelpController
+{
+    [self performSegueWithIdentifier:@"showHelp" sender:self];
 }
 
 #pragma mark - Handle Gestures
@@ -139,6 +208,11 @@
 - (void)handleSwipeLeft:(UISwipeGestureRecognizer *)gesture
 {
     [self.client.xbmcQueue enqueue:[NSNumber numberWithInteger:SWIPE_LEFT]];
+}
+
+- (void)handleTwoFingersRight:(UISwipeGestureRecognizer *)gestuire
+{
+    [self.client.xbmcQueue enqueue:[NSNumber numberWithInteger:BACK]];
 }
 
 - (void)handleSwipeRight:(UISwipeGestureRecognizer *)gesture
@@ -160,11 +234,44 @@
 
 - (void)shouldSetBackground:(NSString *)background
 {
-    UIImage *backgroundImage = [DENMediaManager getImageWithFileName:background];
-    
-    if (backgroundImage) {
-        self.collectionView.backgroundView = [[UIImageView alloc] initWithImage:backgroundImage];
+    if (background) {
+        UIImage *backgroundImage = [DENMediaManager getImageWithFileName:background];
+                
+        if (backgroundImage) {
+            self.collectionView.backgroundView = [[UIImageView alloc] initWithImage:backgroundImage];
+        }
     }
+}
+
+- (void)removeBackground
+{
+    self.collectionView.backgroundView.alpha = 0.0f;
+    self.collectionView.backgroundColor = [UIColor blackColor];
+}
+
+- (void)isGameMaster
+{
+    // Add the button
+    UIButton *infoButton = [UIButton buttonWithType:UIButtonTypeInfoLight];
+    infoButton.frame = CGRectMake(self.view.bounds.size.width - 44, self.view.bounds.size.height - 44, 44, 44);
+    infoButton.tintColor = [UIColor whiteColor];
+    [infoButton addTarget:self action:@selector(showQuit) forControlEvents:UIControlEventTouchUpInside];
+    
+    [self.view addSubview:infoButton];
+}
+
+- (void)showQuit
+{
+    [UIActionSheet showInView:self.view
+                    withTitle:nil
+            cancelButtonTitle:@"Cancel"
+       destructiveButtonTitle:@"Quit game"
+            otherButtonTitles:nil
+                     tapBlock:^(UIActionSheet *actionSheet, NSInteger buttonIndex) {
+                         if (buttonIndex == [actionSheet destructiveButtonIndex]) {
+                             [self.client sendKillCommand];
+                         }
+                     }];
 }
 
 @end

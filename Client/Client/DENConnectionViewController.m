@@ -8,8 +8,11 @@
 
 #import "DENConnectionViewController.h"
 #import "DENButtonViewController.h"
+#import "DENNSUserDefaults.h"
 
-@interface DENConnectionViewController () <DENClientProtocol, UIAlertViewDelegate>
+#import <UIAlertView+Blocks.h>
+
+@interface DENConnectionViewController () <DENClientProtocol, UIAlertViewDelegate, UITextFieldDelegate>
 
 @property (nonatomic, strong) NSMutableArray *services;
 
@@ -32,7 +35,11 @@
     UIBarButtonItem *space = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
     
     [self setToolbarItems:@[space, connectButton]];
+}
 
+- (BOOL)prefersStatusBarHidden
+{
+    return NO;
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -88,8 +95,7 @@
 
 - (void)didFindServices:(NSMutableArray *)services
 {
-    [self.services addObjectsFromArray:services];
-    
+    self.services = services;
     [self.tableView reloadData];
 }
 
@@ -120,8 +126,41 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSNetService *service = [self.services objectAtIndex:indexPath.row];
-    [self.client connectToService:service];
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
+    UIAlertView *av = [[UIAlertView alloc] initWithTitle:@"Enter user name"
+                                                 message:@"Please enter your in game display name"
+                                                delegate:nil
+                                        cancelButtonTitle:@"Cancel"
+                                        otherButtonTitles:@"OK", nil];
+        
+    av.alertViewStyle = UIAlertViewStylePlainTextInput;
+    [av textFieldAtIndex:0].tag = 53;
+    if (defaults.userName) {
+        [av textFieldAtIndex:0].text = defaults.userName;
+    }
+    [av textFieldAtIndex:0].delegate = self;
+    av.tapBlock = ^(UIAlertView *alertView, NSInteger buttonIndex) {
+        if (buttonIndex == alertView.firstOtherButtonIndex) {
+            defaults.userName = [[alertView textFieldAtIndex:0] text];
+            [defaults synchronize];
+            NSNetService *service = [self.services objectAtIndex:indexPath.row];
+            [self.client connectToService:service];
+        }
+    };
+        
+    [av show];
+    
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
+{
+    if (textField.tag == 53) {
+        return ( range.location < 10 );
+    } else {
+        return YES;
+    }
 }
 
 
@@ -166,11 +205,6 @@
                                           otherButtonTitles:nil, nil];
     
     [alert show];
-    
-    [self.services removeAllObjects];
-    [self.tableView reloadData];
 }
-
-
 
 @end

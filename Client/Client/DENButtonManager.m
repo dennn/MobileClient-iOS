@@ -10,6 +10,7 @@
 #import "DENButtonCell.h"
 #import "DENFakeButtonCell.h"
 #import "DENButton.h"
+#import "DENButtonLayout.h"
 
 @interface DENButtonManager ()
 
@@ -26,25 +27,34 @@
     if (self = [super init]) {
         _buttons = [NSMutableDictionary new];
         _pressedButtons = [NSMutableDictionary new];
+        
+        [_collectionView registerClass:[DENButtonCell class] forCellWithReuseIdentifier:@"BUTTON_CELL"];
+        [_collectionView registerClass:[DENFakeButtonCell class] forCellWithReuseIdentifier:@"FAKE_BUTTON_CELL"];
     }
     return self;
 }
 
 - (void)processGameData:(NSDictionary *)buttonData
 {
+    
+    self.columns = [[buttonData objectForKey:@"Width"] integerValue];
+    self.rows = [[buttonData objectForKey:@"Height"] integerValue];
+    
+    if ([self.collectionView.collectionViewLayout isKindOfClass:[DENButtonLayout class]]) {
+        DENButtonLayout *layout = (DENButtonLayout *)self.collectionView.collectionViewLayout;
+        layout.rows = self.rows;
+        layout.columns = self.columns;
+    }
+    
     [buttonData enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-        if ([key isEqualToString:@"Width"]) {
-            self.columns = [obj integerValue];
-        } else if ([key isEqualToString:@"Height"]) {
-            self.rows = [obj integerValue];
-        } else {
+        if ([key isEqualToString:@"Width"] == NO && [key isEqualToString:@"Height"] == NO) {
             NSNumber *buttonID = [NSNumber numberWithInteger:[key integerValue]];
             DENButton *newButton = [[DENButton alloc] initWithDictionary:obj andID:[buttonID integerValue]];
             [self.buttons setObject:newButton forKey:[newButton indexPathForColumns:self.columns]];
             [self.pressedButtons setObject:[NSNumber numberWithInteger:RELEASED] forKey:buttonID];
         }
     }];
-    
+        
     [self.collectionView reloadData];
 }
 
@@ -78,18 +88,36 @@
     }
 }
 
+- (void)gameEnded
+{
+    self.columns = 0;
+    self.rows = 0;
+    if ([self.collectionView.collectionViewLayout isKindOfClass:[DENButtonLayout class]]) {
+        DENButtonLayout *layout = (DENButtonLayout *)self.collectionView.collectionViewLayout;
+        layout.rows = self.rows;
+        layout.columns = self.columns;
+    }
+    [self.buttons removeAllObjects];
+    [self.pressedButtons removeAllObjects];
+    [self.collectionView reloadData];
+}
+
 #pragma mark - Button Sending
 
 - (void)buttonPressed:(id)sender
 {
     UIButton *button = (UIButton *)sender;
-    [self.pressedButtons setObject:[NSNumber numberWithInteger:PRESSED] forKey:[NSNumber numberWithInteger:button.tag]];
+    if (self.pressedButtons) {
+        [self.pressedButtons setObject:[NSNumber numberWithInteger:PRESSED] forKey:[NSNumber numberWithInteger:button.tag]];
+    }
 }
 
 - (void)buttonReleased:(id)sender
 {
     UIButton *button = (UIButton *)sender;
-    [self.pressedButtons setObject:[NSNumber numberWithInteger:RELEASED] forKey:[NSNumber numberWithInteger:button.tag]];
+    if (self.pressedButtons) {
+        [self.pressedButtons setObject:[NSNumber numberWithInteger:RELEASED] forKey:[NSNumber numberWithInteger:button.tag]];
+    }
 }
 
 - (NSDictionary *)getButtonDataForID:(NSInteger)ID

@@ -38,7 +38,8 @@ NS_ENUM(NSInteger, xbmc) {
     SWIPE_LEFT,
     SWIPE_RIGHT,
     SWIPE_UP,
-    SWIPE_DOWN
+    SWIPE_DOWN,
+    BACK
 };
 
 @protocol DENClientProtocol <NSObject>
@@ -47,6 +48,7 @@ NS_ENUM(NSInteger, xbmc) {
 - (void)shouldSetBackground:(NSString *)background;
 - (void)didFindServices:(NSMutableArray *)services;
 - (void)didFailToConnect;
+- (void)isGameMaster;
 
 @end
 
@@ -64,6 +66,7 @@ NS_ENUM(NSInteger, xbmc) {
 // Media Downloading
 - (void)completedDownloadingMedia;
 - (void)startDownloadingFile:(NSString *)fileName withSize:(NSUInteger)size;
+- (void)sendKillCommand;
 
 + (NSData *)createErrorMessageForCode:(Error)errorCode;
 
@@ -77,5 +80,7 @@ NS_ENUM(NSInteger, xbmc) {
 @property (nonatomic, strong) NSMutableArray *xbmcQueue;
 
 @property (nonatomic, weak) DENButtonViewController *buttonViewController;
+
+@property (nonatomic, assign) BOOL waitingForGame;
 
 @end

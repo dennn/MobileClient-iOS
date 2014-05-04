@@ -164,6 +164,10 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
             if ([self.delegate respondsToSelector:@selector(didFailToConnect)]) {
                 [self.delegate didFailToConnect];
             }
+        } else if (err.code == 61) {
+            if ([self.delegate respondsToSelector:@selector(didFailToConnect)]) {
+                [self.delegate didFailToConnect];
+            }
         }
     }
     
@@ -186,7 +190,6 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 {
     if (tag == kFileDownloadTag && self.downloadingFiles) {
         if ([self.delegate respondsToSelector:@selector(didDownloadFile:)]) {
-            NSLog(@"Downloaded file of size %lu", (unsigned long)[data length]);
             [self.delegate didDownloadFile:data];
         }
     } else if (self.downloadingFiles == NO) {
@@ -199,6 +202,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
             if ([self.delegate respondsToSelector:@selector(didReadServerRequest:withData:)]) {
                 [self.delegate didReadServerRequest:requestType withData:JSONOutput];
             }
+            
             if (requestType != GAME_START) {
                 [self.socket readDataToData:[GCDAsyncSocket LFData] withTimeout:-1 tag:2];
             }
@@ -208,7 +212,6 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 
 - (void)restartListening
 {
-    NSLog(@"Restarting listening");
     [self.socket readDataToData:[GCDAsyncSocket LFData] withTimeout:-1 tag:2];
 }
 
