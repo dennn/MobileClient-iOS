@@ -33,9 +33,14 @@
     self.view.backgroundColor = [UIColor blackColor];
 }
 
+- (NSUInteger)supportedInterfaceOrientations
+{
+    return UIInterfaceOrientationMaskLandscape;
+}
+
 - (BOOL)prefersStatusBarHidden
 {
-    return NO;
+    return YES;
 }
 
 - (void)didReceiveMemoryWarning

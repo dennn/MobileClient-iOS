@@ -13,6 +13,7 @@
 
 #import <SVProgressHUD.h>
 #import <UIActionSheet+Blocks.h>
+#import <UIAlertView+Blocks.h>
 
 @import AudioToolbox;
 
@@ -48,6 +49,7 @@
     self.client.buttonViewController = self;
     self.client.delegate = self;
     self.collectionView.dataSource = self.client.buttonManager;
+    self.collectionView.delaysContentTouches = NO;
     self.client.buttonManager.collectionView = self.collectionView;
 }
 
@@ -107,10 +109,9 @@
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         if ([SVProgressHUD isVisible] == NO) {
-            [self removeBackground];
             [SVProgressHUD showWithStatus:@"Waiting for game"];
-
         }
+        [self removeBackground];
     });
 }
 
@@ -272,6 +273,18 @@
                              [self.client sendKillCommand];
                          }
                      }];
+}
+
+- (void)didFailToConnect
+{
+    [UIAlertView showWithTitle:@"Connection Error"
+                       message:@"Connection timed out"
+             cancelButtonTitle:@"OK"
+             otherButtonTitles:nil
+                      tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex) {
+                                    [self.client disconnect];
+                                }];
+    
 }
 
 @end
