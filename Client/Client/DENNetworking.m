@@ -128,7 +128,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 - (void)socket:(GCDAsyncSocket *)sock didConnectToHost:(NSString *)host port:(uint16_t)port
 {
     self.connected = CONNECTED;
-    [self.socket readDataToData:[GCDAsyncSocket LFData] withTimeout:-1 tag:2];
+    [self.socket readDataToData:[GCDAsyncSocket LFData] withTimeout:5 tag:2];
     if ([self.delegate respondsToSelector:@selector(didConnect)]) {
         [self.delegate didConnect];
     }
@@ -155,6 +155,13 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
                     [self.delegate didFailToConnect];
                 }
                 break;
+                
+            case GCDAsyncSocketReadTimeoutError:
+                NSLog(@"%@", err);
+                if ([self.delegate respondsToSelector:@selector(didFailToConnect)]) {
+                    [self.delegate didFailToConnect];
+                    return;
+                }
                 
             default:
                 break;
@@ -204,7 +211,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
             }
             
             if (requestType != GAME_START) {
-                [self.socket readDataToData:[GCDAsyncSocket LFData] withTimeout:-1 tag:2];
+                [self.socket readDataToData:[GCDAsyncSocket LFData] withTimeout:5 tag:2];
             }
         }
     }
@@ -212,7 +219,12 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 
 - (void)restartListening
 {
-    [self.socket readDataToData:[GCDAsyncSocket LFData] withTimeout:-1 tag:2];
+    [self.socket readDataToData:[GCDAsyncSocket LFData] withTimeout:5 tag:2];
+}
+
+- (NSTimeInterval)socket:(GCDAsyncSocket *)sock shouldTimeoutReadWithTag:(long)tag elapsed:(NSTimeInterval)elapsed bytesDone:(NSUInteger)length
+{
+    return 0;
 }
 
 @end

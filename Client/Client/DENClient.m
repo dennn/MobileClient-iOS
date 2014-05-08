@@ -111,6 +111,7 @@ static NSString * const kSSIDName = @"dd-wrt";
 
 - (void)willDisconnect
 {
+    self.waitingForGame = NO;
     self.handShaked = NO;
     self.isGameMaster = NO;
     self.connected = DISCONNECTED;
@@ -186,6 +187,7 @@ static NSString * const kSSIDName = @"dd-wrt";
             } else {
                 [self.networkManager writeData:[DENClient createErrorMessageForCode:HANDSHAKE_AFTER_HANDSHAKE]];
             }
+            NSLog(@"Got handshake");
             break;
         }
             
@@ -225,6 +227,7 @@ static NSString * const kSSIDName = @"dd-wrt";
         {
             self.waitingForGame = NO;
             [self disconnect];
+            NSLog(@"Got disconnect");
             break;
         }
             
@@ -233,6 +236,7 @@ static NSString * const kSSIDName = @"dd-wrt";
             self.waitingForGame = NO;
             [self.buttonManager processGameData:[JSONData objectForKey:@"Buttons"]];
             [self.mediaManager processMediaData:[JSONData objectForKey:@"Media"]];
+            NSLog(@"Got game start");
             break;
         }
             
@@ -241,6 +245,7 @@ static NSString * const kSSIDName = @"dd-wrt";
             [self.buttonManager gameEnded];
             self.waitingForGame = YES;
             [self completeGameEnd];
+            NSLog(@"Got game end");
             break;
         }
             
@@ -259,6 +264,7 @@ static NSString * const kSSIDName = @"dd-wrt";
             self.waitingForGame = NO;
             [self.buttonViewController dismissXBMCViewController];
             [self completeXBMCEnd];
+            NSLog(@"Got xbmc end");
             break;
         }
             
@@ -273,6 +279,7 @@ static NSString * const kSSIDName = @"dd-wrt";
         {
             self.waitingForGame = YES;
             [self completePulse];
+            NSLog(@"Got pulse");
             break;
         }
             
