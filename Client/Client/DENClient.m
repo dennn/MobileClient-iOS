@@ -187,7 +187,7 @@ static NSString * const kSSIDName = @"dd-wrt";
             } else {
                 [self.networkManager writeData:[DENClient createErrorMessageForCode:HANDSHAKE_AFTER_HANDSHAKE]];
             }
-            NSLog(@"Got handshake");
+       //     NSLog(@"Got handshake");
             break;
         }
             
@@ -227,7 +227,7 @@ static NSString * const kSSIDName = @"dd-wrt";
         {
             self.waitingForGame = NO;
             [self disconnect];
-            NSLog(@"Got disconnect");
+        //    NSLog(@"Got disconnect");
             break;
         }
             
@@ -236,7 +236,7 @@ static NSString * const kSSIDName = @"dd-wrt";
             self.waitingForGame = NO;
             [self.buttonManager processGameData:[JSONData objectForKey:@"Buttons"]];
             [self.mediaManager processMediaData:[JSONData objectForKey:@"Media"]];
-            NSLog(@"Got game start");
+        //    NSLog(@"Got game start");
             break;
         }
             
@@ -245,7 +245,7 @@ static NSString * const kSSIDName = @"dd-wrt";
             [self.buttonManager gameEnded];
             self.waitingForGame = YES;
             [self completeGameEnd];
-            NSLog(@"Got game end");
+       //     NSLog(@"Got game end");
             break;
         }
             
@@ -256,6 +256,8 @@ static NSString * const kSSIDName = @"dd-wrt";
                 [self.buttonViewController loadXBMCViewController];
                 [self completeXBMCStart];
             }
+       //     NSLog(@"Got xbmc start");
+
             break;
         }
             
@@ -264,7 +266,7 @@ static NSString * const kSSIDName = @"dd-wrt";
             self.waitingForGame = NO;
             [self.buttonViewController dismissXBMCViewController];
             [self completeXBMCEnd];
-            NSLog(@"Got xbmc end");
+        //    NSLog(@"Got xbmc end");
             break;
         }
             
@@ -279,7 +281,7 @@ static NSString * const kSSIDName = @"dd-wrt";
         {
             self.waitingForGame = YES;
             [self completePulse];
-            NSLog(@"Got pulse");
+      //      NSLog(@"Got pulse");
             break;
         }
             

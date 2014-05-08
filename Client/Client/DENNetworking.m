@@ -157,7 +157,12 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
                 break;
                 
             case GCDAsyncSocketReadTimeoutError:
-                NSLog(@"%@", err);
+                if ([self.delegate respondsToSelector:@selector(didFailToConnect)]) {
+                    [self.delegate didFailToConnect];
+                    return;
+                }
+                
+            case GCDAsyncSocketWriteTimeoutError:
                 if ([self.delegate respondsToSelector:@selector(didFailToConnect)]) {
                     [self.delegate didFailToConnect];
                     return;
@@ -183,14 +188,14 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 
 - (void)writeData:(NSData *)data
 {
-    [self.socket writeData:data withTimeout:-1 tag:1];
+    [self.socket writeData:data withTimeout:5 tag:1];
 }
 
 - (void)startDownloadingFile:(NSData *)file ofSize:(NSUInteger)size
 {
-    [self.socket writeData:file withTimeout:-1 tag:kFileDownloadTag];
+    [self.socket writeData:file withTimeout:5 tag:kFileDownloadTag];
 
-    [self.socket readDataToLength:size withTimeout:-1 tag:kFileDownloadTag];
+    [self.socket readDataToLength:size withTimeout:5 tag:kFileDownloadTag];
 }
 
 - (void)socket:(GCDAsyncSocket *)sock didReadData:(NSData *)data withTag:(long)tag
@@ -223,6 +228,11 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 }
 
 - (NSTimeInterval)socket:(GCDAsyncSocket *)sock shouldTimeoutReadWithTag:(long)tag elapsed:(NSTimeInterval)elapsed bytesDone:(NSUInteger)length
+{
+    return 0;
+}
+
+- (NSTimeInterval)socket:(GCDAsyncSocket *)sock shouldTimeoutWriteWithTag:(long)tag elapsed:(NSTimeInterval)elapsed bytesDone:(NSUInteger)length
 {
     return 0;
 }
