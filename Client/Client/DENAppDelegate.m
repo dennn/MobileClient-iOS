@@ -14,6 +14,9 @@
 {
     self.client = [DENClient sharedManager];
     
+    [[UIApplication sharedApplication] setIdleTimerDisabled: YES];
+
+    
     return YES;
 }
 							
