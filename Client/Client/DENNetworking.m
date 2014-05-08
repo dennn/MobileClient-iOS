@@ -95,7 +95,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
     NSError *err = nil;
     
     self.connected = CONNECTING;
-    [self.socket connectToHost:self.host onPort:self.port withTimeout:2.0 error:&err];
+    [self.socket connectToHost:self.host onPort:self.port withTimeout:5.0 error:&err];
     if (err) {
         if ([self.delegate respondsToSelector:@selector(didFailToConnect)]) {
             [self.delegate didFailToConnect];
@@ -128,7 +128,7 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 - (void)socket:(GCDAsyncSocket *)sock didConnectToHost:(NSString *)host port:(uint16_t)port
 {
     self.connected = CONNECTED;
-    [self.socket readDataToData:[GCDAsyncSocket LFData] withTimeout:5 tag:2];
+    [self.socket readDataToData:[GCDAsyncSocket LFData] withTimeout:5.0 tag:2];
     if ([self.delegate respondsToSelector:@selector(didConnect)]) {
         [self.delegate didConnect];
     }
@@ -193,9 +193,9 @@ static NSString * const kBonjourService = @"_gpserver._tcp.";
 
 - (void)startDownloadingFile:(NSData *)file ofSize:(NSUInteger)size
 {
-    [self.socket writeData:file withTimeout:5 tag:kFileDownloadTag];
+    [self.socket writeData:file withTimeout:-1 tag:kFileDownloadTag];
 
-    [self.socket readDataToLength:size withTimeout:5 tag:kFileDownloadTag];
+    [self.socket readDataToLength:size withTimeout:-1 tag:kFileDownloadTag];
 }
 
 - (void)socket:(GCDAsyncSocket *)sock didReadData:(NSData *)data withTag:(long)tag

@@ -138,6 +138,8 @@
     [av textFieldAtIndex:0].tag = 53;
     if (defaults.userName) {
         [av textFieldAtIndex:0].text = defaults.userName;
+    } else {
+        [av textFieldAtIndex:0].text = @"Guest";
     }
     [av textFieldAtIndex:0].delegate = self;
     av.tapBlock = ^(UIAlertView *alertView, NSInteger buttonIndex) {
